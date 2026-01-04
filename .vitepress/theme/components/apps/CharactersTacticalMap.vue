@@ -135,7 +135,7 @@
     <!-- Character Detail Panel (Right Side) -->
     <Transition name="panel-slide">
       <div v-if="selectedCharacter" class="character-detail-panel">
-        <button class="panel-close" @click="selectedCharacterId = null">✕</button>
+        <button class="panel-close" @click="playCancel(); selectedCharacterId = null">✕</button>
         
         <div class="panel-header">
           <div class="panel-avatar">
@@ -352,7 +352,7 @@ import { isPasswordUnlocked as checkPasswordUnlocked, unlockPassword, isHiddenQu
 const emit = defineEmits(['close', 'openHistory', 'openWorld', 'openMarket', 'openSystem']);
 const router = useRouter();
 const { startTransition } = usePageTransition();
-const { playHover, playClick, playCardSelect, playTyping, playUnlock, playBack, playTransition, playSelect, categoryVolumes, setCategoryVolume } = useSteamSound();
+const { playHover, playClick, playCardSelect, playTyping, playUnlock, playBack, playTransition, playSelect, playCancel, categoryVolumes, setCategoryVolume } = useSteamSound();
 
 const ambientVolume = computed({
   get: () => categoryVolumes.ambient,

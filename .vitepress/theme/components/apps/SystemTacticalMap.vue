@@ -1,5 +1,5 @@
 <template>
-  <div class="system-tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome, 'is-booting': isBooting, 'boot-completed': bootCompleted, 'boot-phase-1': bootPhase === 1, 'boot-phase-2': bootPhase === 2, 'boot-phase-3': bootPhase === 3, 'boot-phase-4': bootPhase === 4, 'fx-success': screenFxType === 'critical-success', 'fx-fail': screenFxType === 'critical-fail', 'critical-success': consoleState === 'critical-success', 'critical-failure': consoleState === 'critical-failure' }" ref="mapContainer">
+  <div class="system-tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome, 'is-booting': isBooting, 'boot-completed': bootCompleted, 'boot-phase-1': bootPhase === 1, 'boot-phase-2': bootPhase === 2, 'boot-phase-3': bootPhase === 3, 'boot-phase-4': bootPhase === 4, 'fx-success': screenFxType === 'critical-success', 'fx-fail': screenFxType === 'critical-fail', 'fx-jam': screenFxType === 'fail', 'critical-success': consoleState === 'critical-success', 'critical-failure': consoleState === 'critical-failure', 'failure': consoleState === 'failure' }" ref="mapContainer">
     
     <!-- Boot Overlay (Phase 1: BIOS Terminal) -->
     <div v-if="bootPhase <= 1" class="boot-overlay">
@@ -826,8 +826,11 @@ const triggerScreenFx = (outcome) => {
   } else if (outcome === 'FUMBLE') {
     screenFxType.value = 'critical-fail';
     consoleState.value = 'critical-failure';
+  } else if (outcome === 'JAM') {
+    screenFxType.value = 'fail';
+    consoleState.value = 'failure';
   } else {
-    return; // No FX for normal results
+    return; // No FX for STRAIN (partial success)
   }
   screenFxActive.value = true;
   setTimeout(() => {
@@ -1070,11 +1073,15 @@ const finalizeAdvancedRoll = () => {
   const statName = selectedStat.value ? `[${selectedStat.value.name}]` : '';
   addCombatLog(`판정: ${lastCalcString.value} → ${resultLabel} ${statName}`, diceOutcome.value.toLowerCase());
   
-  // Trigger Screen FX
-  triggerScreenFx(diceOutcome.value);
-  
-  // Trigger Navi Dialogue
+  // Trigger Navi Dialogue first (always runs)
   triggerNaviDialogue(diceOutcome.value);
+  
+  // Trigger Screen FX (independent, errors won't block dialogue)
+  try {
+    triggerScreenFx(diceOutcome.value);
+  } catch (e) {
+    console.error('triggerScreenFx error:', e);
+  }
   
   // If overclock was used, add warning
   if (overclockEnabled.value) {
@@ -3939,6 +3946,43 @@ onUnmounted(() => {
   50% { transform: translateX(-2px); }
   75% { transform: translateX(2px); }
   100% { transform: translateX(0); }
+}
+
+/* JAM (실패) Screen FX */
+.screen-fx-overlay.fail .fx-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(255, 136, 0, 0.35) 0%, rgba(0, 0, 0, 0.2) 70%, transparent 100%);
+  animation: jam-flash 0.6s ease-out forwards;
+}
+
+@keyframes jam-flash {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* JAM (실패) Console State */
+.system-tactical-map.failure .bento-panel,
+.system-tactical-map.failure .grid-panel {
+  border-color: rgba(255, 136, 0, 0.5) !important;
+  box-shadow: 0 0 20px rgba(255, 136, 0, 0.2), inset 0 0 30px rgba(255, 136, 0, 0.05) !important;
+}
+
+.system-tactical-map.failure .panel-label,
+.system-tactical-map.failure .panel-title {
+  color: #ff8800 !important;
+  text-shadow: 0 0 10px rgba(255, 136, 0, 0.5) !important;
+}
+
+.system-tactical-map.fx-jam .bento-panel,
+.system-tactical-map.fx-jam .grid-panel {
+  border-color: rgba(255, 136, 0, 0.6) !important;
+}
+
+.system-tactical-map.fx-jam .panel-label,
+.system-tactical-map.fx-jam .panel-title {
+  color: #ff8800 !important;
 }
 
 /* ━━━━━━ Combat Info Description Line ━━━━━━ */
