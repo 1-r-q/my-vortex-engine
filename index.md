@@ -1,14 +1,6 @@
 ---
-layout: page
+layout: home
 ---
-
-<script setup>
-import CustomHome from './.vitepress/theme/components/CustomHome.vue'
-</script>
-
-<div class="custom-layout-wrapper">
-  <CustomHome />
-</div>
 
 <style>
 /* 1. 기본 레이아웃 및 여백 제거 */

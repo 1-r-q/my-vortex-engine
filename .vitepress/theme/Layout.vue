@@ -8,7 +8,7 @@
   <BootScreen v-else-if="!isBooted" @close-boot="onBootComplete" />
   
   <!-- 메인 콘텐츠 -->
-  <div v-else>
+  <div v-else class="main-content-wrapper">
     <canvas id="layout-matrix-canvas"></canvas>
     
     <!-- Global Page Transition Overlay (Disabled) -->
@@ -80,7 +80,9 @@
 
     </div> -->
 
-    <Layout>
+    <CustomHome v-if="frontmatter.layout === 'home'" />
+    
+    <Layout v-else>
       <template #sidebar-nav-after>
         <div class="sound-control-panel">
           <div class="control-header">
@@ -120,6 +122,7 @@ import { transitionState } from './transitionState';
 import { useSteamSound } from './composables/useSteamSound';
 
 const { Layout } = DefaultTheme;
+const { frontmatter } = useData();
 const { setCategoryVolume, getCategoryVolume, playHover, playClick, categoryVolumes } = useSteamSound();
 
 const ambientVolume = computed({

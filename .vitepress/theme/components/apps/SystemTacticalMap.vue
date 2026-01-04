@@ -123,6 +123,11 @@
                   <span class="comm-cursor" v-if="isNaviTyping">_</span>
                 </div>
               </div>
+              <!-- 판정 결과 효과 표시 -->
+              <div class="comm-outcome" v-if="diceOutcome" :class="diceOutcome.toLowerCase()">
+                <span class="outcome-label">▶ 효과:</span>
+                <span class="outcome-desc">{{ outcomeDescription }}</span>
+              </div>
               <div class="comm-status">
                 <span class="status-indicator" :class="naviMood"></span>
                 <span class="status-label">{{ naviMoodLabel }}</span>
@@ -4230,6 +4235,59 @@ onUnmounted(() => {
   font-size: 0.75rem;
   color: #888;
   letter-spacing: 1px;
+}
+
+/* Outcome Description in Navi Comm Link */
+.comm-outcome {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  margin-top: 0.3rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 176, 0, 0.3);
+  border-radius: 3px;
+  font-family: 'Consolas', monospace;
+}
+
+.comm-outcome .outcome-label {
+  font-size: 0.7rem;
+  color: #888;
+  flex-shrink: 0;
+}
+
+.comm-outcome .outcome-desc {
+  font-size: 0.8rem;
+  color: #ffb000;
+  font-weight: bold;
+}
+
+.comm-outcome.jackpot .outcome-desc {
+  color: #ffd700;
+  text-shadow: 0 0 8px #ffd700;
+}
+
+.comm-outcome.perfect .outcome-desc {
+  color: #00ff88;
+}
+
+.comm-outcome.strain .outcome-desc {
+  color: #ffaa00;
+}
+
+.comm-outcome.jam .outcome-desc {
+  color: #ff6666;
+}
+
+.comm-outcome.fumble .outcome-desc {
+  color: #ff4444;
+  text-shadow: 0 0 6px #ff4444;
+  animation: fumble-pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes fumble-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 /* Sidebar entrance animation (only from home, not when booting, not after boot completed) */

@@ -421,6 +421,7 @@ const runBootSequence = async () => {
 };
 
 const handleLogin = async () => {
+  console.log("[DEBUG] handleLogin started");
   if (!userCode.value.trim()) return;
   
   // 로딩바를 0으로 리셋 후 입력창 숨기기
@@ -432,11 +433,14 @@ const handleLogin = async () => {
   // 기존 로그는 사라지지 않게 유지
   showLogs.value = true;
   
-  await playLoadingSound(); // 로딩 사운드 시작 (await 추가)
+  console.log("[DEBUG] before playLoadingSound");
+  playLoadingSound(); // 로딩 사운드 시작 (await 제거 - 블로킹 방지)
+  console.log("[DEBUG] after playLoadingSound");
 
   // 로딩바 자연스럽게 채우기 (CSS transition 활용)
   // 약간의 지연 후 100%로 설정하여 트랜지션 트리거
   await new Promise(r => setTimeout(r, 50));
+  console.log("[DEBUG] starting progress bar");
   progress.value = 100;
   
   // 숫자 애니메이션 (0 -> 100 over 1.5s)
@@ -533,12 +537,19 @@ const handleLogin = async () => {
   
   // 전환 레이어가 덮이는 순간 부팅 스크린 제거 (Layout 노출 준비)
   await new Promise(r => setTimeout(r, 50));
-  visible.value = false;
+  
+  // ★ emit을 먼저 호출하여 Layout에서 isBooted를 true로 설정
+  console.log("[DEBUG] emitting close-boot event");
   emit('close-boot');
+  console.log("[DEBUG] close-boot event emitted");
+  
+  // 그 다음 BootScreen 내부 요소 숨김 (이미 Layout에서 BootScreen이 언마운트됨)
+  visible.value = false;
   
   // 블랙 페이드 아웃 대기 (2초)
   await new Promise(r => setTimeout(r, 2000));
   showFlash.value = false;
+  console.log("[DEBUG] handleLogin completed");
 };
 
 const focusInput = () => {
