@@ -81,6 +81,9 @@
     </div> -->
 
     <Layout>
+      <template #home-content>
+        <CustomHome />
+      </template>
       <template #sidebar-nav-after>
         <div class="sound-control-panel">
           <div class="control-header">
