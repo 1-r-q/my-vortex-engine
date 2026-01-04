@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "terser": "^5.44.1",
+    "vitepress": "^1.6.4"
+  }
+}
