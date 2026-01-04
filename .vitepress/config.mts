@@ -1,10 +1,11 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  // ▼ 이 줄이 반드시 필요합니다! (저장소 이름이 my-vortex-engine일 경우)
-  base: '/my-vortex-engine/',
+  // ▼ [중요] 도메인 연결 시에는 무조건 '/' 로 변경해야 합니다.
+  // 기존: base: '/my-vortex-engine/',
+  base: '/',
 
-  // 기존 설정 유지
+  // (기존 설정 유지)
   vite: {
     build: {
       sourcemap: false,
