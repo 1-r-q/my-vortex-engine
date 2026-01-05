@@ -299,7 +299,7 @@
             <span class="btn-icon">📦</span>
             <span class="btn-glow"></span>
           </div>
-          <span class="btn-label">에셋</span>
+          <span class="btn-label">상점</span>
           <span class="btn-sublabel">ASSETS</span>
         </button>
         <button class="rail-btn" @click="switchModule(withBase('/threats/database.html'))">

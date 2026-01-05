@@ -543,7 +543,7 @@
         </button>
         <button class="rail-btn" @click="switchModule(withBase('/assets/list.html'))">
           <div class="btn-slot"><span class="btn-icon">📦</span><span class="btn-glow"></span></div>
-          <span class="btn-label">에셋</span><span class="btn-sublabel">ASSETS</span>
+          <span class="btn-label">상점</span><span class="btn-sublabel">ASSETS</span>
         </button>
         <button class="rail-btn active">
           <div class="btn-slot"><span class="btn-icon">⚖️</span><span class="btn-glow"></span></div>
@@ -591,7 +591,7 @@ const router = useRouter();
 const { startTransition } = usePageTransition();
 const { 
   playHover, playClick, playClickHeavy, playToggleOn, playToggleOff,
-  playGearEngage, playLeverPull, playTransition, playBeep, playBeepConfirm, playBeepWarning,
+  playGearEngage, playLeverPull, playTransition, playBeep, playBeepConfirm, playBeepAlert,
   playBootStart, playBootLine, playBootComplete, playTyping,
   playDiceRoll, playDiceStop, playCriticalSuccess, playCriticalFail,
   playDataTransmit, playCardSelect, playBack, playSelect, playScan,
@@ -988,11 +988,11 @@ const outcomeLabel = computed(() => {
 
 const outcomeDescription = computed(() => {
   const descs = {
-    'JACKPOT': '즉사 / 무피해 / 보상 2배',
-    'PERFECT': '적 내구 -1 / 무피해',
-    'STRAIN': '적 내구 -1 / 내 장갑 -1',
-    'JAM': '실패 / 내 장갑 -1',
-    'FUMBLE': '치명타 / 장갑 -2'
+    'JACKPOT': '피해없음 / 보상 2배',
+    'PERFECT': '적 내구도 감소 / 피해없음',
+    'STRAIN': '적/유저 내구도 감소',
+    'JAM': '실패 / 내구도 감소',
+    'FUMBLE': '치명타 / 내구도 대폭 감소'
   };
   return descs[diceOutcome.value] || '';
 });
@@ -1054,7 +1054,7 @@ const finalizeAdvancedRoll = () => {
   } else if (diceOutcome.value === 'FUMBLE') {
     playCriticalFail();
   } else if (diceOutcome.value === 'JAM') {
-    playBeepWarning();
+    playBeepAlert();
   } else {
     playBeep();
   }

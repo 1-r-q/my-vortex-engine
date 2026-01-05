@@ -382,7 +382,7 @@
             <span class="btn-icon">📦</span>
             <span class="btn-glow"></span>
           </div>
-          <span class="btn-label">에셋</span>
+          <span class="btn-label">상점</span>
           <span class="btn-sublabel">ASSETS</span>
         </button>
         <button class="rail-btn" @click="switchModule(withBase('/threats/database.html'))">
@@ -396,7 +396,7 @@
 
         <!-- Volume Control -->
         <div class="rail-volume-control">
-          <div class="volume-label">BGM</div>
+          <div class="volume-label">BGM VOL</div>
           <div class="volume-slider-container">
             <input 
               type="range" 

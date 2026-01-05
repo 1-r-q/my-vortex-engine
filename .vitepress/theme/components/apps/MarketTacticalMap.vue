@@ -300,7 +300,7 @@
             <span class="btn-icon">📦</span>
             <span class="btn-glow"></span>
           </div>
-          <span class="btn-label">에셋</span>
+          <span class="btn-label">상점</span>
           <span class="btn-sublabel">ASSETS</span>
         </button>
         <button class="rail-btn" @click="switchModule(withBase('/threats/database.html'))">
@@ -351,7 +351,7 @@ import { useSteamSound } from '../../composables/useSteamSound';
 const emit = defineEmits(['close', 'openHistory', 'openWorld', 'openCharacters', 'openSystem']);
 const router = useRouter();
 const { startTransition } = usePageTransition();
-const { playHover, playClick, playCardSelect, playToggleOn, playToggleOff, playBack, playTransition, playBeepConfirm, playDataTransmit, playScan, categoryVolumes, setCategoryVolume } = useSteamSound();
+const { playHover, playClick, playCardSelect, playBuy, playToggleOn, playToggleOff, playBack, playTransition, playBeepConfirm, playDataTransmit, playScan, categoryVolumes, setCategoryVolume } = useSteamSound();
 
 const ambientVolume = computed({
   get: () => categoryVolumes.ambient,
@@ -516,7 +516,7 @@ const handleCardLeave = (item, idx) => {
 const handleItemClick = (item) => {
   if (activeTab.value === 'market' && !itemStates[item.id]?.revealed) return;
   
-  playCardSelect();
+  playBuy();
   if (toastTimer) clearTimeout(toastTimer);
   
   const action = activeTab.value === 'market' ? 'PURCHASED' : 'REQUISITIONED';

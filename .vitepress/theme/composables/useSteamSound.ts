@@ -85,6 +85,7 @@ export type SoundType =
   | 'transition'      // 화면 전환
   | 'card-flip'       // 카드 뒤집기
   | 'card-select'     // 카드 선택
+  | 'buy'             // 구매
   | 'loading-bar';    // 로딩 바 (루프)
 
 // 사운드 설정
@@ -98,7 +99,7 @@ interface SoundConfig {
 // 사운드 맵 (실제 파일이 없으면 Web Audio API로 생성)
 const SOUND_MAP: Record<SoundType, SoundConfig> = {
   // UI 사운드
-  'loading-bar': { src: '/sound/loading.wav', volume: 0.5, loop: true, category: 'ui' },
+  'loading-bar': { src: '/sound/loading.wav', volume: 0.8, loop: true, category: 'ui' },
   'hover': { src: '/sound/hover.wav', volume: 0.2, category: 'ui' },
   'click': { src: '/sound/click.wav', volume: 0.4, category: 'ui' },
   'click-heavy': { src: '/sound/click.wav', volume: 0.5, category: 'ui' },
@@ -109,19 +110,19 @@ const SOUND_MAP: Record<SoundType, SoundConfig> = {
   'cancel': { src: '/sound/cancle.wav', volume: 0.5, category: 'ui' },
   
   // 기계 사운드
-  'gear-turn': { src: '/sound/loading.wav', volume: 0.3, category: 'mechanical' },
+  'gear-turn': { src: '/sound/loading.wav', volume: 0.8, category: 'mechanical' },
   'gear-engage': { src: '/sound/click.wav', volume: 0.5, category: 'mechanical' },
   'lever-pull': { src: '/sound/click.wav', volume: 0.5, category: 'mechanical' },
   'valve-open': { src: '/sound/click.wav', volume: 0.4, category: 'mechanical' },
   'valve-close': { src: '/sound/cancle.wav', volume: 0.4, category: 'mechanical' },
-  'mechanism-start': { src: '/sound/loading.wav', volume: 0.5, category: 'mechanical' },
+  'mechanism-start': { src: '/sound/loading.wav', volume: 0.8, category: 'mechanical' },
   'mechanism-stop': { src: '/sound/cancle.wav', volume: 0.4, category: 'mechanical' },
   
   // 증기 사운드
-  'steam-hiss': { src: '/sound/loading.wav', volume: 0.3, category: 'steam' },
-  'steam-release': { src: '/sound/loading.wav', volume: 0.4, category: 'steam' },
+  'steam-hiss': { src: '/sound/loading.wav', volume: 0.8, category: 'steam' },
+  'steam-release': { src: '/sound/loading.wav', volume: 0.8, category: 'steam' },
   'steam-burst': { src: '/sound/error.wav', volume: 0.6, category: 'steam' },
-  'pressure-build': { src: '/sound/loading.wav', volume: 0.4, category: 'steam' },
+  'pressure-build': { src: '/sound/loading.wav', volume: 0.8, category: 'steam' },
   'pressure-release': { src: '/sound/cancle.wav', volume: 0.5, category: 'steam' },
   
   // 전자 사운드
@@ -129,21 +130,21 @@ const SOUND_MAP: Record<SoundType, SoundConfig> = {
   'beep-confirm': { src: '/sound/unlock.wav', volume: 0.4, category: 'electronic' },
   'beep-deny': { src: '/sound/error.wav', volume: 0.4, category: 'electronic' },
   'beep-alert': { src: '/sound/error.wav', volume: 0.5, category: 'electronic' },
-  'data-transmit': { src: '/sound/loading.wav', volume: 0.3, category: 'electronic' },
+  'data-transmit': { src: '/sound/loading.wav', volume: 0.7, category: 'electronic' },
   'typing': { src: '/sound/type.wav', volume: 0.2, category: 'electronic' },
-  'scan': { src: '/sound/loading.wav', volume: 0.3, category: 'electronic' },
+  'scan': { src: '/sound/loading.wav', volume: 0.7, category: 'electronic' },
   
   // 배경 사운드
-  'boot-start': { src: '/sound/loading.wav', volume: 0.5, category: 'ambient' },
+  'boot-start': { src: '/sound/loading.wav', volume: 0.8, category: 'ambient' },
   'boot-line': { src: '/sound/type.wav', volume: 0.2, category: 'ambient' },
   'boot-complete': { src: '/sound/unlock.wav', volume: 0.5, category: 'ambient' },
   'ambient-hum': { src: '/sound/background%20sound.mp3', volume: 1.0, loop: true, category: 'ambient' },
-  'power-up': { src: '/sound/loading.wav', volume: 0.5, category: 'ambient' },
+  'power-up': { src: '/sound/loading.wav', volume: 0.8, category: 'ambient' },
   'power-down': { src: '/sound/cancle.wav', volume: 0.4, category: 'ambient' },
   
   // 특수 효과
   'sequence-start': { src: '/sound/sequence.wav', volume: 0.5, category: 'special' },
-  'dice-roll': { src: '/sound/loading.wav', volume: 0.5, category: 'special' },
+  'dice-roll': { src: '/sound/loading.wav', volume: 0.7, category: 'special' },
   'dice-stop': { src: '/sound/click.wav', volume: 0.6, category: 'special' },
   'critical-success': { src: '/sound/unlock.wav', volume: 0.7, category: 'special' },
   'critical-fail': { src: '/sound/error.wav', volume: 0.7, category: 'special' },
@@ -152,10 +153,11 @@ const SOUND_MAP: Record<SoundType, SoundConfig> = {
   'unlock': { src: '/sound/unlock.wav', volume: 0.6, category: 'special' },
   'alarm': { src: '/sound/error.wav', volume: 0.6, category: 'special' },
   'explosion': { src: '/sound/error.wav', volume: 0.7, category: 'special' },
-  'warp': { src: '/sound/loading.wav', volume: 0.6, category: 'special' },
-  'transition': { src: '/sound/loading.wav', volume: 0.4, category: 'special' },
+  'warp': { src: '/sound/loading.wav', volume: 0.7, category: 'special' },
+  'transition': { src: '/sound/loading.wav', volume: 0.7, category: 'special' },
   'card-flip': { src: '/sound/click.wav', volume: 0.4, category: 'special' },
   'card-select': { src: '/sound/click.wav', volume: 0.5, category: 'special' },
+  'buy': { src: '/sound/buy.wav', volume: 1.0, category: 'ui' },
 };
 
 // 전역 오디오 컨텍스트 (Web Audio API)
@@ -1085,6 +1087,7 @@ export function useSteamSound() {
     playTransition: () => playSound('transition'),
     playCardFlip: () => playSound('card-flip'),
     playCardSelect: () => playSound('card-select'),
+    playBuy: () => playSound('buy'),
     playLoadingBar: () => playSound('loading-bar'),
     
     // 배경음 제어 (HTML5 Audio 사용)

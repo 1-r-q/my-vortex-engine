@@ -262,7 +262,7 @@
         </button>
         <button class="rail-btn" @click="openModule('market')" @mouseenter="playHover" :class="{ active: activeModule === 'market' }">
           <div class="btn-slot"><span class="btn-icon">📦</span><span class="btn-glow"></span></div>
-          <span class="btn-label">에셋</span><span class="btn-sublabel">ASSETS</span>
+          <span class="btn-label">상점</span><span class="btn-sublabel">ASSETS</span>
         </button>
         <button class="rail-btn" @click="openModule('system')" @mouseenter="playHover" :class="{ active: activeModule === 'system' }">
           <div class="btn-slot"><span class="btn-icon">⚖️</span><span class="btn-glow"></span></div>
@@ -272,7 +272,7 @@
       
       <!-- Volume Control -->
       <div class="rail-volume-control">
-        <div class="volume-label">BGM</div>
+        <div class="volume-label">BGM VOL</div>
         <div class="volume-slider-container">
           <input 
             type="range" 
