@@ -100,12 +100,12 @@ interface SoundConfig {
 const SOUND_MAP: Record<SoundType, SoundConfig> = {
   // UI 사운드
   'loading-bar': { src: '/sound/loading.wav', volume: 0.8, loop: true, category: 'ui' },
-  'hover': { src: '/sound/hover.wav', volume: 0.1, category: 'ui' },
+  'hover': { src: '/sound/hover.wav', volume: 0.05, category: 'ui' },
   'click': { src: '/sound/click.wav', volume: 0.4, category: 'ui' },
   'click-heavy': { src: '/sound/click.wav', volume: 0.5, category: 'ui' },
-  'toggle-on': { src: '/sound/click.wav', volume: 0.4, category: 'ui' },
+  'toggle-on': { src: '/sound/click.wav', volume: 0.3, category: 'ui' },
   'toggle-off': { src: '/sound/click.wav', volume: 0.4, category: 'ui' },
-  'select': { src: '/sound/click.wav', volume: 0.4, category: 'ui' },
+  'select': { src: '/sound/click.wav', volume: 0.5, category: 'ui' },
   'back': { src: '/sound/cancle.wav', volume: 0.3, category: 'ui' },
   'cancel': { src: '/sound/cancle.wav', volume: 0.5, category: 'ui' },
   
