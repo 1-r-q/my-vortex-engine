@@ -138,9 +138,14 @@
         <button class="panel-close" @click="playCancel(); selectedCharacterId = null">✕</button>
         
         <div class="panel-header">
-          <div class="panel-avatar">
+          <div class="panel-avatar clickable" @click="openGallery">
             <img v-if="selectedCharacterDetailImage" :src="withBase(selectedCharacterDetailImage)" :alt="selectedCharacter.name" />
             <div v-else class="avatar-placeholder large">{{ selectedCharacter.name.charAt(0) }}</div>
+            
+            <div class="gallery-hint">
+              <span class="hint-icon">⌖</span>
+              <span class="hint-text">GALLERY</span>
+            </div>
           </div>
           <div class="panel-title">
             <h2>{{ selectedCharacter.name }}</h2>
@@ -338,12 +343,22 @@
       <span class="conn-status">● CONNECTED</span>
       <span class="conn-node">PERSONNEL NODE: BIO-ARCHIVE-07</span>
     </div>
+
+    <!-- Gallery Modal -->
+    <CharacterGalleryModal 
+      :is-open="showGallery" 
+      :character-name="selectedCharacter?.name"
+      :character-id="selectedCharacter?.id"
+      :character-image="selectedCharacter?.image"
+      @close="showGallery = false"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, withBase } from 'vitepress';
+import CharacterGalleryModal from './CharacterGalleryModal.vue';
 import { usePageTransition } from '../../transitionState';
 import { useSteamSound } from '../../composables/useSteamSound';
 import { characterData } from '../../data/characterData';
@@ -369,6 +384,7 @@ const animatedPercent = ref(75);
 const selectedLayerId = ref('upper');
 const selectedFactionId = ref(null);
 const selectedCharacterId = ref(null);
+const showGallery = ref(false);
 const currentQuoteIndex = ref(0);
 const quoteClickCount = ref(0); // 클릭 횟수 추적
 const typedText = ref(''); // 타이핑되는 텍스트
@@ -474,6 +490,7 @@ const startTyping = (text) => {
   typingInterval = setInterval(() => {
     if (i < text.length) {
       typedText.value += text.charAt(i);
+      playTyping();
       i++;
     } else {
       clearInterval(typingInterval);
@@ -578,6 +595,13 @@ const selectCharacter = (char) => {
   const character = faction?.characters.find(c => c.id === char.id);
   if (character?.quotes?.length) {
     startTyping(character.quotes[0]);
+  }
+};
+
+const openGallery = () => {
+  if (selectedCharacter.value) {
+    playSelect();
+    showGallery.value = true;
   }
 };
 
@@ -1000,6 +1024,46 @@ onUnmounted(() => {
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid var(--c-primary);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.panel-avatar.clickable {
+  cursor: pointer;
+}
+
+.panel-avatar.clickable:hover {
+  border-color: #fff;
+  box-shadow: 0 0 15px var(--c-primary);
+  transform: scale(1.05);
+}
+
+.gallery-hint {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.panel-avatar.clickable:hover .gallery-hint {
+  opacity: 1;
+}
+
+.hint-icon {
+  font-size: 1.2rem;
+  color: var(--c-primary);
+  margin-bottom: 2px;
+}
+
+.hint-text {
+  font-size: 0.5rem;
+  color: #fff;
+  letter-spacing: 1px;
 }
 
 .panel-avatar img {
