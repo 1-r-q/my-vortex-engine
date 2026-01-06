@@ -2043,4 +2043,97 @@ onUnmounted(() => {
 .is-exiting .cinematic-blackout {
   display: none;
 }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  /* Hide heavy decorative elements */
+  .cinema-bar, 
+  .info-rail, 
+  .bg-overlay, 
+  .scan-line,
+  .giant-ring,
+  .ghost-gear,
+  .right-data-cloud {
+    display: none !important; 
+  }
+
+  .tactical-map {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Center Core Adjustment */
+  .nexus-core {
+    transform: translate(-50%, -50%) scale(0.6); /* Scale down */
+    top: 40%; /* Move up slightly to make room for bottom nav */
+  }
+
+  /* Command Rail -> Bottom Navigation Bar */
+  .command-rail {
+    flex-direction: row;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: rgba(5, 5, 5, 0.95);
+    border-right: none;
+    border-top: 1px solid #ffb000;
+    padding: 5px;
+    align-items: center;
+    justify-content: center;
+    z-index: 900;
+  }
+
+  .rail-header, .rail-footer, .rail-volume-control {
+    display: none; /* Simplify rail */
+  }
+
+  .rail-buttons {
+    flex-direction: row;
+    gap: 10px;
+    margin-top: 0;
+    width: 100%;
+    justify-content: space-evenly;
+  }
+
+  .rail-btn {
+    width: auto;
+    height: auto;
+    padding: 5px;
+    border-bottom: none;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .rail-btn.active {
+    border-left: none;
+    border-bottom: 2px solid #ffb000;
+  }
+
+  .btn-slot {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 2px;
+  }
+
+  .btn-label {
+    display: block; /* Show Korean label */
+    font-size: 10px;
+    margin-left: 0;
+  }
+  
+  .btn-sublabel {
+    display: none; /* Hide English label */
+  }
+
+  /* Adjust Initiate Button */
+  .initiate-btn {
+    bottom: 100px; /* Above the nav bar */
+  }
+}
 </style>

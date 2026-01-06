@@ -463,4 +463,74 @@ onMounted(() => {
 .ticker-content { display: flex; gap: 30px; position: absolute; animation: ticker 15s linear infinite; white-space: nowrap; }
 
 @keyframes ticker { 0% { left: 100%; } 100% { left: -100%; } }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto auto; /* Header, Main, Nav, Footer */
+    grid-template-areas:
+      "header"
+      "main"
+      "nav"
+      "footer";
+    padding: 5px;
+    gap: 5px;
+  }
+  
+  .header-panel {
+    padding: 0 10px;
+    height: 50px;
+  }
+  
+  .header-center, .header-right {
+    display: none; /* Hide status bar and extra links on mobile */
+  }
+
+  /* Info panel is less critical, hide it or move it to bottom if needed. 
+     For now, hiding it to save space as per typical mobile dashboard patterns. */
+  .info-panel {
+    display: none;
+  }
+
+  .nav-panel {
+    flex-direction: row; /* Horizontal nav */
+    overflow-x: auto;
+    padding: 5px;
+    height: auto;
+    border: none;
+    background: rgba(0,0,0,0.5);
+  }
+  
+  .nav-list {
+    flex-direction: row;
+    gap: 5px;
+    padding: 0;
+  }
+  
+  .nav-link {
+    padding: 8px 10px;
+    border-left: 1px solid rgba(255, 176, 0, 0.5); /* Reset border */
+    border: 1px solid rgba(255, 176, 0, 0.2);
+    margin-bottom: 0;
+  }
+
+  .nav-num, .nav-arrow {
+    display: none; /* Simplify nav items */
+  }
+  
+  .nav-text {
+    font-size: 1rem;
+  }
+  
+  .main-panel {
+    overflow-y: auto; 
+  }
+
+  .tactical-dashboard {
+    /* Ensure it handles mobile viewport heights correctly */
+    height: 100vh;
+    height: 100dvh;
+  }
+}
 </style>

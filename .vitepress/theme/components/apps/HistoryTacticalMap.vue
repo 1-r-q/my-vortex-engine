@@ -3188,4 +3188,42 @@ onUnmounted(() => {
   background: #ffb000;
   border-radius: 2px;
 }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .cinema-bar, .command-rail, .info-rail {
+    display: none !important;
+  }
+  
+  /* Timeline or Content adjustments */
+  .center-timeline-axis {
+    left: 20px; /* Move to left side */
+    transform: none;
+  }
+  
+  .history-entry-points {
+    left: 20px;
+    width: calc(100% - 40px);
+    transform: none;
+  }
+  
+  .timeline-node {
+    left: 0; /* Align to the axis line */
+  }
+  
+  .event-card {
+    position: relative;
+    left: 30px !important; /* Offset from left axis */
+    top: auto !important;
+    right: auto !important;
+    transform: none !important;
+    width: calc(100% - 50px);
+    margin-bottom: 20px;
+  }
+  
+  /* Hide connection lines that might look weird */
+  .connection-line {
+    display: none;
+  }
+}
 </style>

@@ -1248,8 +1248,85 @@ onUnmounted(() => {
 }
 
 /* 모바일 대응 */
-@media (max-width: 600px) {
-  .ascii-logo { font-size: 6px; line-height: 6px; }
-  .terminal-window { width: 95%; height: 80vh; }
+@media (max-width: 768px) {
+  .terminal-window {
+    width: 95%;
+    height: 90vh;
+    max-height: 90vh;
+  }
+  
+  .content-layout {
+    flex-direction: column;
+  }
+
+  .left-panel {
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+    padding-right: 0;
+    width: 100%;
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 80px; /* 입력창 공간 확보 */
+  }
+
+  .right-panel {
+    display: none; /* 모바일에서는 우측 패널(장식) 숨김 */
+  }
+  
+  .ascii-logo { 
+    font-size: 6px; 
+    line-height: 6px; 
+    margin-bottom: 10px;
+  }
+
+  .ascii-logo-large {
+    font-size: 10px;
+  }
+  
+  .log-area {
+    font-size: 14px;
+  }
+  
+  .input-area {
+    position: absolute;
+    bottom: 20px;
+    left: 10px;
+    width: calc(100% - 20px);
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .input-group {
+    width: 100%;
+  }
+  
+  .input-box {
+    width: 100%;
+    height: 45px;
+  }
+  
+  .input-text {
+    font-size: 1.5rem;
+  }
+  
+  .loading-container {
+    width: 90%;
+    left: 5%;
+    bottom: 90px;
+  }
+  
+  .access-msg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    text-align: center;
+  }
+
+  .final-msg-large {
+    font-size: 20px;
+    padding: 0 10px;
+  }
 }
 </style>

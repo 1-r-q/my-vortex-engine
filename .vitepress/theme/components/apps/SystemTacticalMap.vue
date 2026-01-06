@@ -4404,4 +4404,53 @@ onUnmounted(() => {
   background: #ffb000;
   border-radius: 2px;
 }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .cinema-bar, .command-rail, .info-rail {
+    display: none !important;
+  }
+
+  .main-content {
+    top: 10px;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+  }
+
+  .bento-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas: 
+      "panel-protocols"
+      "panel-console"
+      "panel-chip"
+      "panel-terminal"; /* Protocol -> Console -> Chip -> Terminal order */
+    gap: 10px;
+    padding-bottom: 250px; /* Space for navi-comm-link */
+    overflow-y: auto;
+    height: 100%;
+    display: block; /* Fallback for complex grids */
+  }
+
+  /* Force panels to stack roughly */
+  .grid-panel {
+    grid-area: auto !important;
+    height: auto;
+    min-height: 200px;
+    margin-bottom: 15px;
+  }
+
+  .panel-protocols { height: 300px; }
+  .panel-console { height: auto; }
+  .console-actions { flex-wrap: wrap; }
+  
+  .navi-comm-link {
+    width: 95%;
+    height: 200px;
+    bottom: 10px;
+    right: 2.5%;
+    left: 2.5%;
+  }
+}
 </style>

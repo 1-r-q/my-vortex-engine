@@ -176,4 +176,24 @@ const stopDrag = () => {
 .top-right { top: 0; right: 0; border-left: none; border-bottom: none; }
 .bottom-left { bottom: 0; left: 0; border-right: none; border-top: none; }
 .bottom-right { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .window-frame {
+    width: 95% !important;
+    height: 90vh !important;
+    left: 2.5% !important;
+    top: 5vh !important;
+    transform: none !important; /* Reset any potential transforms */
+  }
+
+  .window-header {
+    height: 45px; /* Larger touch target */
+  }
+
+  .control-btn {
+    width: 36px;
+    height: 36px; /* Larger close button */
+  }
+}
 </style>

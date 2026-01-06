@@ -1316,4 +1316,78 @@ onUnmounted(() => {
 ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #ffb000; }
 
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .mission-terminal {
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+  
+  .cartridge-bay {
+    width: 100%;
+    height: 120px;
+    border-right: none;
+    border-bottom: 2px solid #8b5a2b;
+    flex-shrink: 0;
+  }
+  
+  .cartridge-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 10px;
+    gap: 15px;
+  }
+  
+  .cartridge-slot {
+    width: 200px;
+    height: 80px;
+    flex-shrink: 0;
+  }
+  
+  .tactical-viewport {
+    flex: 1;
+    overflow: hidden; /* Contains scroll inside */
+  }
+  
+  .monitor-frame {
+    /* Adjust frame */
+    padding: 10px;
+  }
+  
+  .briefing-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .op-param-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  
+  .op-param-bar span {
+    font-size: 0.7rem;
+  }
+  
+  .briefing-body {
+    padding: 10px;
+  }
+  
+  .info-card {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .mission-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .control-btn {
+    width: 100%;
+  }
+}
 </style>

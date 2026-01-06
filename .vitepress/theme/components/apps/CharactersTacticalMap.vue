@@ -2266,4 +2266,61 @@ onUnmounted(() => {
   background: #ffb000;
   border-radius: 2px;
 }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .cinema-bar, .command-rail, .info-rail {
+    display: none !important;
+  }
+  
+  .layer-tabs-panel {
+    top: 5px;
+    width: 95%;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 5px;
+  }
+  
+  .faction-selector {
+    top: 60px;
+    width: 95%;
+    overflow-x: auto;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    padding-bottom: 5px;
+  }
+
+  .character-grid-wrapper {
+    margin-top: 110px;
+    grid-template-columns: 1fr;
+    width: 95%;
+    height: auto;
+    overflow-y: visible; /* Let wrapper scroll if needed, or parent */
+    padding-bottom: 20px;
+  }
+  
+  .characters-tactical-map {
+    overflow-y: auto; /* Enable vertical scroll on main container */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Grid Switch Transition fix for mobile */
+  .grid-switch-leave-active {
+    position: absolute; 
+    top: 110px;
+    width: 95%;
+  }
+
+  /* Hero Mode Stacking */
+  .char-grid.hero-mode {
+    flex-direction: column;
+    height: auto;
+    gap: 30px;
+  }
+  
+  .char-card {
+    min-height: 500px; /* Ensure ample space for card details */
+    height: auto;
+  }
+}
 </style>

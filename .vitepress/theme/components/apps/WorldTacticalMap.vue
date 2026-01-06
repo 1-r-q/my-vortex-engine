@@ -2493,4 +2493,58 @@ onUnmounted(() => {
   background: #ffb000;
   border-radius: 2px;
 }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .cinema-bar, 
+  .command-rail, 
+  .info-rail {
+    display: none !important;
+  }
+  
+  .world-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 60px; /* Space for hidden header or breathing room */
+    overflow-y: auto;
+    height: 100vh;
+    height: 100dvh;
+    width: 100%;
+  }
+  
+  .center-spire {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin-bottom: 20px;
+    height: 300px; /* Reduced height */
+  }
+  
+  .altitude-markers {
+    display: none;
+  }
+  
+  .wing-card-wrapper {
+    position: relative; /* Stack cards */
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 90%;
+    margin-bottom: 15px;
+    transform: none !important; /* Remove absolute positioning transforms */
+  }
+  
+  .pos-tl, .pos-tr, .pos-bl, .pos-br {
+    transform: none;
+  }
+  
+  .location-card {
+    width: 100%;
+    height: auto;
+    min-height: 120px;
+  }
+}
 </style>

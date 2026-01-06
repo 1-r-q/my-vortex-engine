@@ -100,4 +100,11 @@ h3 {
 .cost {
   color: #ffb000;
 }
+
+@media (max-width: 768px) {
+  .market-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+}
 </style>

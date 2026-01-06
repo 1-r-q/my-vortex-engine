@@ -652,14 +652,14 @@ body {
 .steam-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
-  height: 12px;
+  width: 20px; /* 터치하기 쉽게 크기 증가 */
+  height: 20px;
   background: #ffb000;
   border: 2px solid #000;
   border-radius: 50%;
   box-shadow: 0 0 5px #ffb000;
   cursor: pointer;
-  margin-top: -4px;
+  margin-top: -8px; /* 중앙 정렬 조정 */
 }
 
 .slider-track {

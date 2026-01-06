@@ -487,4 +487,49 @@ onMounted(() => {
 .modal-fade-leave-to {
   opacity: 0;
 }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .gallery-modal-content {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    border: none;
+  }
+
+  .image-caption-box {
+    position: relative;
+    bottom: auto;
+    right: auto;
+    width: 100%;
+    max-width: none;
+    transform: none;
+    border-left: 1px solid #ffb000; /* Reset skew border */
+    margin-top: -60px; /* Pull up over image slightly or sit below */
+    background: rgba(10, 5, 2, 0.95);
+  }
+
+  .caption-inner {
+    transform: none;
+  }
+
+  .main-viewport {
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .image-container {
+    height: 70%; /* Reserve space for other elements */
+    align-items: center;
+  }
+
+  .nav-btn {
+    padding: 30px 15px; /* Larger touch area */
+    background: rgba(0,0,0,0.2); /* Less intrusive */
+  }
+
+  .thumbnails-strip {
+    height: 60px;
+  }
+}
 </style>

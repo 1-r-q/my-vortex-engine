@@ -2011,4 +2011,44 @@ watch(activeTab, () => {
   background: #ffb000;
   border-radius: 2px;
 }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  .cinema-bar, .command-rail, .info-rail {
+    display: none !important;
+  }
+
+  .arsenal-grid-wrapper {
+    grid-template-columns: 1fr; /* Single column */
+    grid-template-rows: auto;
+    width: 95%;
+    padding: 10px 0;
+    margin-top: 60px; /* Space for tabs */
+    height: auto;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  /* Reset grid areas for arsenal items */
+  .arsenal-item {
+    grid-area: auto !important;
+    height: auto;
+    min-height: 150px;
+    width: 100%;
+  }
+
+  .item-lg {
+    height: auto;
+    min-height: 300px;
+  }
+
+  /* Adjust Tab Switch Panel */
+  .tab-switch-panel {
+    top: 10px;
+    width: 90%;
+    height: 40px;
+  }
+}
 </style>
