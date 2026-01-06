@@ -13,6 +13,11 @@
         <img :src="currentImageSrc" :alt="characterName" class="gallery-image" />
         <div class="scanlines"></div>
         <div class="glitch-overlay"></div>
+        
+        <!-- Emotion Label Overlay -->
+        <div class="emotion-label-overlay">
+          {{ currentEmotionLabel }}
+        </div>
       </div>
       
       <!-- Variant Selector -->
@@ -50,6 +55,20 @@ const props = defineProps({
 defineEmits(['close']);
 
 const selectedVariant = ref(0);
+
+const emotionLabels = [
+  '기본 (Default)',
+  '기쁨 (Joy)',
+  '분노 (Anger)',
+  '슬픔 (Sorrow)',
+  '당황 (Panic)',
+  '부끄러움 (Shy)',
+  '특수 (Special)'
+];
+
+const currentEmotionLabel = computed(() => {
+  return emotionLabels[selectedVariant.value] || '알 수 없음 (Unknown)';
+});
 
 // Extract base name for folder lookup
 // e.g. "/my-base/images/characters/Aria.png" -> "Aria"
@@ -189,14 +208,31 @@ watch(() => props.isOpen, (newVal) => {
   width: 100%;
   max-width: 400px;
   /* aspect-ratio: 1; Removed fixed aspect ratio for better fit */
-  height: 60vh; /* Use viewport height */
+  height: 55vh; /* Use viewport height */
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid #333;
   background: #111;
   overflow: hidden;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+}
+
+.emotion-label-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 8px;
+  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+  color: #ffb000;
+  text-align: center;
+  font-family: 'Share Tech Mono', sans-serif;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 5px #000;
+  pointer-events: none;
 }
 
 .gallery-image {

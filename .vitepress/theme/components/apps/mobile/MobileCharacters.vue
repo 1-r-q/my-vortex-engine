@@ -95,9 +95,18 @@
         </section>
 
         <section class="mc-section" v-if="selectedCharacter.quotes && selectedCharacter.quotes.length">
-          <div class="mc-sec-title">>> 음성 기록 (VOICE LOG)</div>
-          <div class="mc-quote-box">
-            "{{ selectedCharacter.quotes[0] }}"
+          <div class="mc-sec-title">>> 음성 기록 (VOICE LOG - INTERACTIVE)</div>
+          <div 
+            class="mc-quote-box interactive" 
+            @click="handleQuoteClick"
+            :class="{ 'unlocked': isHiddenUnlocked }"
+          >
+            <div class="quote-content">"{{ currentQuote }}"</div>
+            <div class="quote-meta">
+              <span v-if="isHiddenUnlocked" class="meta-label unlocked">🔓 HIDDEN DATA FOUND</span>
+              <span v-else class="meta-label">🔒 ACCESSING CORE... ({{ clickCount }}/10)</span>
+              <span class="tap-hint">TAP TO PLAY ▶</span>
+            </div>
           </div>
         </section>
       </div>
@@ -116,7 +125,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { withBase } from 'vitepress';
 import { characterData } from '../../../data/characterData';
 import MobileNavbar from './MobileNavbar.vue';
@@ -130,6 +139,11 @@ const selectedCharacter = ref(null);
 const currentFactionColor = ref('#ffb000');
 const isGalleryOpen = ref(false);
 
+// Interaction State
+const clickCount = ref(0);
+const isHiddenUnlocked = ref(false);
+const currentQuote = ref('');
+
 const layers = [
   { id: 'upper', shortName: 'UPPER' },
   { id: 'middle', shortName: 'MIDDLE' },
@@ -142,9 +156,67 @@ const filteredFactions = computed(() => {
   return characterData.filter(f => f.layer === selectedLayerId.value);
 });
 
+// Character Selection & Logic
 const selectCharacter = (char, faction) => {
   selectedCharacter.value = char;
   currentFactionColor.value = faction.color || '#ffb000';
+  
+  // Load Persistence
+  if (typeof window !== 'undefined') {
+    const key = `vortex-char-clicks-${char.id}`;
+    const stored = localStorage.getItem(key);
+    clickCount.value = stored ? parseInt(stored) : 0;
+    
+    // Check unlock status (10 clicks)
+    isHiddenUnlocked.value = clickCount.value >= 10;
+  } else {
+    clickCount.value = 0;
+    isHiddenUnlocked.value = false;
+  }
+  
+  // Reset Quote to first one
+  if (char.quotes && char.quotes.length > 0) {
+    currentQuote.value = char.quotes[0];
+  }
+};
+
+const handleQuoteClick = () => {
+    if (!selectedCharacter.value) return;
+    
+    // Increment Click
+    clickCount.value++;
+    
+    // Save Persistence
+    if (typeof window !== 'undefined') {
+        localStorage.setItem(`vortex-char-clicks-${selectedCharacter.value.id}`, clickCount.value.toString());
+    }
+    
+    // Unlock Check
+    if (!isHiddenUnlocked.value && clickCount.value >= 10) {
+        isHiddenUnlocked.value = true;
+        // Optional: Play unlock sound effect here if we had the audio context
+        alert("ACCESS GRANTED: HIDDEN ARCHIVES UNLOCKED");
+    }
+    
+    // Cycle Quote
+    const char = selectedCharacter.value;
+    let pool = [...char.quotes];
+    
+    // Add hidden quotes if unlocked
+    if (isHiddenUnlocked.value && char.hiddenQuotes) {
+        pool = [...pool, ...char.hiddenQuotes];
+    }
+    
+    // Random pick from pool (different from current if possible)
+    if (pool.length > 1) {
+        let nextQuote;
+        do {
+            nextQuote = pool[Math.floor(Math.random() * pool.length)];
+        } while (nextQuote === currentQuote.value);
+        currentQuote.value = nextQuote;
+    } else {
+        currentQuote.value = pool[0];
+    }
 };
 
 const handleBack = () => {
@@ -208,6 +280,56 @@ const getRank = (stats) => {
 }
 
 .mc-title { margin: 0; font-size: 1.2rem; color: #ffb000; letter-spacing: 1px; }
+
+.mc-quote-box.interactive {
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  border-left: 3px solid #666;
+}
+
+.mc-quote-box.interactive:active {
+  background: #222;
+  transform: scale(0.99);
+}
+
+.mc-quote-box.unlocked {
+  border-left-color: #ff3333; /* Red for hidden unlocked */
+  background: rgba(255, 51, 51, 0.05);
+}
+
+.quote-content {
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.quote-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  color: #555;
+  border-top: 1px dotted #333;
+  padding-top: 8px;
+}
+
+.meta-label.unlocked {
+  color: #ff3333;
+  font-weight: bold;
+  animation: flicker 2s infinite;
+}
+
+.tap-hint {
+  color: #ffb000;
+  font-weight: bold;
+}
+
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
 
 .mc-back-btn {
   background: #222; border: 1px solid #444; color: #fff;

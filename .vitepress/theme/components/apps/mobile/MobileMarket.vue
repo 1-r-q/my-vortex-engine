@@ -11,14 +11,14 @@
         :class="{ active: activeTab === 'workshop' }"
         @click="activeTab = 'workshop'"
       >
-        제작소 (WORKSHOP)
+        제작소
       </button>
       <button 
         class="mode-btn danger" 
         :class="{ active: activeTab === 'market' }"
         @click="activeTab = 'market'"
       >
-        암시장 (BLACK MARKET)
+        암시장
       </button>
     </div>
 
