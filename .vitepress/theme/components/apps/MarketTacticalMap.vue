@@ -1,8 +1,24 @@
 <template>
+  <div class="mobile-market-view" v-if="isMobile">
+    <div class="m-header">
+      <button @click="goHome" class="back-btn">◀</button>
+      <div class="m-title">BLACK MARKET</div>
+      <div class="m-credits">9,999 $</div>
+    </div>
+    <div class="m-item-list">
+       <div class="m-item" v-for="i in 5" :key="i">
+          <div class="m-item-details">
+            <span class="m-name">UNKNOWN_ITEM_{{i}}</span>
+            <span class="m-type">RESOURCE</span>
+          </div>
+          <span class="m-price">{{ 100 * i }} $</span>
+       </div>
+    </div>
+  </div>
   <div 
     class="market-tactical-map" 
     :class="[activeTab, { 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }]" 
-    ref="mapContainer"
+    ref="mapContainer" v-else
   >
     <!-- 3D Perspective Grid Floor -->
     <div class="grid-floor">
@@ -2050,5 +2066,25 @@ watch(activeTab, () => {
     width: 90%;
     height: 40px;
   }
+}
+</style>
+
+
+<style scoped>
+/* --- Mobile Only Styles --- */
+@media (max-width: 768px) {
+  .mobile-market-view { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #0a0f0a; color: #50ff50; overflow-y: auto; padding: 20px 20px 80px 20px; z-index: 2000; font-family: monospace; }
+  .m-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px dashed #353; }
+  .m-title { font-size: 1.4rem; color: #afffaf; }
+  .m-credits { font-size: 1.1rem; color: #ffd700; }
+  .m-category-tabs { display: flex; gap: 5px; overflow-x: auto; padding: 15px 0; }
+  .m-tab { padding: 5px 10px; border: 1px solid #353; color: #595; white-space: nowrap; margin-right: 5px; }
+  .m-tab.active { background: #131; color: #fff; border-color: #5f5; }
+  .m-item-list { display: flex; flex-direction: column; gap: 15px; }
+  .m-item { display: flex; justify-content: space-between; align-items: center; background: #0f150f; padding: 10px; border: 1px solid #242; }
+  .m-item-details { flex: 1; margin-right: 10px; }
+  .m-name { font-weight: bold; color: #fff; display: block; }
+  .m-type { font-size: 0.8rem; color: #7a7; }
+  .m-price { color: #ffd700; font-weight: bold; }
 }
 </style>

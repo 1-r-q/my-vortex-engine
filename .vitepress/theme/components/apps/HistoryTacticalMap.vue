@@ -1,5 +1,18 @@
 <template>
-  <div class="tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" ref="mapContainer">
+  <div class="mobile-history-view" v-if="isMobile">
+    <div class="m-history-title">CHRONICLE</div>
+    <div class="m-timeline">
+      <div v-for="(event, index) in events" :key="index" class="m-event-card">
+        <div class="m-year">{{ event.year }}</div>
+        <div class="m-event-title">{{ event.title }}</div>
+        <div class="m-desc">{{ event.desc || event.description }}</div>
+      </div>
+    </div>
+     <div style="text-align:center; margin-top:30px;">
+        <button @click="goHome" class="back-btn">◀ MENU</button>
+     </div>
+  </div>
+  <div class="tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" ref="mapContainer" v-else>
     <!-- 3D Perspective Grid Floor -->
     <div class="grid-floor">
       <div class="grid-lines"></div>
@@ -358,7 +371,7 @@
                   :text="item.desc" 
                   :delay="0" 
                   :speed="20" 
-                  :silent="true"
+                  :silent="false"
                 />
               </p>
               
@@ -598,7 +611,7 @@ import { useRouter, withBase } from 'vitepress';
 import { usePageTransition } from '../../transitionState';
 import { useSteamSound } from '../../composables/useSteamSound';
 
-const { playHover, playClick, playCardSelect, playBack, playTransition, playSelect, playDataTransmit, playTyping, categoryVolumes, setCategoryVolume } = useSteamSound();
+const { playHover, playClick, playBack, playTransition, playTyping, categoryVolumes, setCategoryVolume } = useSteamSound();
 
 const ambientVolume = computed({
   get: () => categoryVolumes.ambient,
@@ -621,12 +634,13 @@ const TypeWriter = defineComponent({
   setup(props) {
     const displayText = ref('');
     const started = ref(false);
+    let typeInterval = null;
     
     onMounted(() => {
       setTimeout(() => {
         started.value = true;
         let i = 0;
-        const typeInterval = setInterval(() => {
+        typeInterval = setInterval(() => {
           if (i < props.text.length) {
             displayText.value += props.text.charAt(i);
             if (!props.silent) playTyping();
@@ -636,6 +650,10 @@ const TypeWriter = defineComponent({
           }
         }, props.speed);
       }, props.delay);
+    });
+
+    onUnmounted(() => {
+      if (typeInterval) clearInterval(typeInterval);
     });
     
     return () => h('span', { class: 'typewriter' }, [
@@ -3225,5 +3243,19 @@ onUnmounted(() => {
   .connection-line {
     display: none;
   }
+}
+</style>
+
+<style scoped>
+/* --- Mobile Only Styles --- */
+@media (max-width: 768px) {
+  .mobile-history-view { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #1a1510; color: #e5c09b; overflow-y: auto; padding: 20px 20px 80px 20px; z-index: 2000; font-family: serif; }
+  .m-history-title { font-size: 1.8rem; text-align: center; margin-bottom: 30px; border-bottom: 1px solid #555; padding-bottom: 15px; color: #fff; }
+  .m-timeline { border-left: 2px solid #554030; padding-left: 20px; margin-left: 10px; }
+  .m-event-card { margin-bottom: 30px; position: relative; }
+  .m-event-card::before { content: ""; position: absolute; left: -26px; top: 5px; width: 10px; height: 10px; background: #e5c09b; border-radius: 50%; box-shadow: 0 0 5px #e5c09b; }
+  .m-year { font-size: 1.3rem; font-weight: bold; color: #fff; margin-bottom: 5px; }
+  .m-event-title, .m-title { font-size: 1.1rem; color: #ffa050; margin-bottom: 8px; }
+  .m-desc { color: #ccc; font-size: 0.95rem; line-height: 1.6; }
 }
 </style>

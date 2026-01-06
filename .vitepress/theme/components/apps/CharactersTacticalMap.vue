@@ -1,8 +1,26 @@
 <template>
+  <div class="mobile-char-view" v-if="isMobile">
+    <div class="mobile-header">
+      <button @click="goHome" class="back-btn">◀ MENU</button>
+      <h2>PERSONNEL DB</h2>
+    </div>
+    <div class="mobile-char-list">
+      <div v-for="char in currentCharacters" :key="char.id" class="m-char-card">
+        <div class="m-char-img-container" v-if="char.image">
+            <img :src="withBase(char.image)" class="m-char-img" loading="lazy" />
+        </div>
+        <div class="m-char-info">
+          <div class="m-name">{{ char.name }}</div>
+          <div class="m-role">{{ char.role }}</div>
+          <div class="m-desc">{{ char.desc }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div 
     class="characters-tactical-map" 
     :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" 
-    ref="mapContainer"
+    ref="mapContainer" v-else
   >
     <!-- 3D Perspective Grid Floor -->
     <div class="grid-floor">
@@ -2322,5 +2340,25 @@ onUnmounted(() => {
     min-height: 500px; /* Ensure ample space for card details */
     height: auto;
   }
+}
+</style>
+
+
+<style scoped>
+/* --- Mobile Only Styles --- */
+@media (max-width: 768px) {
+  .mobile-char-view { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #050505; color: #ffb000; overflow-y: auto; padding: 20px 20px 80px 20px; z-index: 2000; font-family: sans-serif; }
+  .mobile-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ffb000; padding-bottom: 15px; margin-bottom: 20px; }
+  .back-btn { background: #333; color: #fff; border: 1px solid #ffb000; padding: 8px 16px; font-weight: bold; }
+  .mobile-layer-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+  .m-tab-btn { flex: 1; padding: 10px; background: #111; border: 1px solid #444; color: #888; }
+  .m-tab-btn.active { background: #ffb000; color: #000; font-weight: bold; }
+  .mobile-char-list { display: flex; flex-direction: column; gap: 15px; }
+  .m-char-card { display: flex; gap: 15px; background: #1a1a1a; padding: 15px; border: 1px solid #333; border-radius: 4px; }
+  .m-char-img { width: 80px; height: 80px; object-fit: cover; border: 1px solid #555; background: #000; }
+  .m-char-info { flex: 1; }
+  .m-name { font-size: 1.1rem; font-weight: bold; color: #fff; margin-bottom: 5px; }
+  .m-role { font-size: 0.9rem; color: #ffb000; margin-bottom: 5px; }
+  .m-desc { font-size: 0.8rem; color: #ccc; line-height: 1.4; }
 }
 </style>

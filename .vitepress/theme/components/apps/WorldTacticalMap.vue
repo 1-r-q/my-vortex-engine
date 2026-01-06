@@ -1,5 +1,23 @@
 <template>
-  <div class="world-tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" ref="mapContainer">
+  <div class="mobile-world-view" v-if="isMobile">
+    <div class="mobile-header">
+      <button @click="goHome" class="back-btn">◀ MENU</button>
+      <h2>WORLD GEOMAP</h2>
+    </div>
+    <div class="mobile-zone-list">
+      <div v-for="(zone, index) in zones" :key="index" class="m-zone-card">
+        <div class="m-zone-header">
+          <div class="m-zone-name">{{ zone.name || zone.title }}</div>
+          <div class="m-threat-badge" v-if="zone.threatLevel">LV.{{ zone.threatLevel }}</div>
+        </div>
+        <div class="m-zone-desc">{{ zone.desc || zone.description }}</div>
+        <div class="m-zone-stats">
+          <span>POP: {{ zone.population || 'UNKNOWN' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="world-tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" ref="mapContainer" v-else>
     <!-- 3D Perspective Grid Floor -->
     <div class="grid-floor">
       <div class="grid-lines"></div>
@@ -2546,5 +2564,20 @@ onUnmounted(() => {
     height: auto;
     min-height: 120px;
   }
+}
+</style>
+
+<style scoped>
+/* --- Mobile Only Styles --- */
+@media (max-width: 768px) {
+  .mobile-world-view { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #080808; color: #00d2ff; overflow-y: auto; padding: 20px 20px 80px 20px; z-index: 2000; font-family: monospace; }
+  .mobile-title { font-size: 1.5rem; border-bottom: 2px solid #00d2ff; padding-bottom: 10px; margin-bottom: 20px; color: #fff; }
+  .mobile-zone-list { display: flex; flex-direction: column; gap: 20px; }
+  .m-zone-card { background: #111; border: 1px solid #333; padding: 15px; border-left: 4px solid #00d2ff; }
+  .m-zone-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .m-zone-name { font-size: 1.2rem; font-weight: bold; color: #fff; }
+  .m-threat-badge { background: #300; color: #f55; padding: 2px 6px; font-size: 0.8rem; border: 1px solid #500; }
+  .m-zone-desc { color: #aaa; font-size: 0.9rem; margin-bottom: 10px; line-height: 1.5; }
+  .m-zone-stats { display: flex; gap: 10px; font-size: 0.8rem; color: #555; }
 }
 </style>

@@ -108,3 +108,11 @@ h3 {
   }
 }
 </style>
+
+<style scoped>
+/* --- Mobile Only Styles --- */
+@media (max-width: 768px) {
+  .market-grid { grid-template-columns: 1fr; }
+  .market-section { margin-bottom: 20px; }
+}
+</style>

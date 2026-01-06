@@ -1,5 +1,20 @@
 <template>
-  <div class="system-tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome, 'is-booting': isBooting, 'boot-completed': bootCompleted, 'boot-phase-1': bootPhase === 1, 'boot-phase-2': bootPhase === 2, 'boot-phase-3': bootPhase === 3, 'boot-phase-4': bootPhase === 4, 'fx-success': screenFxType === 'critical-success', 'fx-fail': screenFxType === 'critical-fail', 'fx-jam': screenFxType === 'fail', 'critical-success': consoleState === 'critical-success', 'critical-failure': consoleState === 'critical-failure', 'failure': consoleState === 'failure' }" ref="mapContainer">
+  <div class="mobile-system-view" v-if="isMobile">
+    <div class="m-sys-header">
+      <div class="m-sys-title">SYSTEM ROOT</div>
+    </div>
+    <div class="m-menu-grid">
+       <div class="m-menu-item" @click="goHome">
+         <div class="m-menu-label">◀ DASHBOARD</div>
+         <div class="m-menu-desc">Return to Main Terminal</div>
+       </div>
+       <div class="m-menu-item">
+         <div class="m-menu-label">RNG ENGINE</div>
+         <div class="m-menu-desc">Dice Simulation (Desktop Only)</div>
+       </div>
+    </div>
+  </div>
+  <div class="system-tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome, 'is-booting': isBooting, 'boot-completed': bootCompleted, 'boot-phase-1': bootPhase === 1, 'boot-phase-2': bootPhase === 2, 'boot-phase-3': bootPhase === 3, 'boot-phase-4': bootPhase === 4, 'fx-success': screenFxType === 'critical-success', 'fx-fail': screenFxType === 'critical-fail', 'fx-jam': screenFxType === 'fail', 'critical-success': consoleState === 'critical-success', 'critical-failure': consoleState === 'critical-failure', 'failure': consoleState === 'failure' }" ref="mapContainer" v-else>
     
     <!-- Boot Overlay (Phase 1: BIOS Terminal) -->
     <div v-if="bootPhase <= 1" class="boot-overlay">
@@ -4452,5 +4467,20 @@ onUnmounted(() => {
     right: 2.5%;
     left: 2.5%;
   }
+}
+</style>
+
+
+<style scoped>
+/* --- Mobile Only Styles --- */
+@media (max-width: 768px) {
+  .mobile-system-view { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #000; color: #fff; overflow-y: auto; padding: 20px 20px 80px 20px; z-index: 2000; font-family: sans-serif; }
+  .m-sys-header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #333; padding-bottom: 20px; }
+  .m-sys-title { font-size: 1.6rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+  .m-menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+  .m-menu-item { background: #111; padding: 20px; border-left: 5px solid #666; transition: 0.2s; }
+  .m-menu-item:active { background: #222; border-left-color: #fff; }
+  .m-menu-label { font-size: 1.2rem; font-weight: bold; }
+  .m-menu-desc { font-size: 0.9rem; color: #888; margin-top: 5px; }
 }
 </style>
