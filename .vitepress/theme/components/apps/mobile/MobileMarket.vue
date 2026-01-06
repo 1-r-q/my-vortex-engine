@@ -1,7 +1,7 @@
 <template>
   <div class="mobile-market-view">
     <div class="mobile-header">
-      <h2>MARKET / WORKSHOP</h2>
+      <h2>자산 / 제작소 (MARKET)</h2>
     </div>
 
     <!-- Mode Tabs -->
@@ -11,14 +11,14 @@
         :class="{ active: activeTab === 'workshop' }"
         @click="activeTab = 'workshop'"
       >
-        WORKSHOP
+        제작소 (WORKSHOP)
       </button>
       <button 
         class="mode-btn danger" 
         :class="{ active: activeTab === 'market' }"
         @click="activeTab = 'market'"
       >
-        BLACK MARKET
+        암시장 (BLACK MARKET)
       </button>
     </div>
 

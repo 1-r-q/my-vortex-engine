@@ -1,7 +1,7 @@
 <template>
   <div class="mobile-system-view">
     <div class="mobile-header">
-      <h2>SYSTEM ROOT</h2>
+      <h2>시스템 (SYSTEM)</h2>
     </div>
 
     <!-- Grid Menu -->
@@ -10,7 +10,7 @@
        <button class="m-menu-card" @click="openLink('/threats/database.html')">
           <div class="card-icon">⚖️</div>
           <div class="card-label">
-            <div class="card-title">CORE RULES</div>
+            <div class="card-title">핵심 규칙</div>
             <div class="card-desc">Vortex System Basic Rules</div>
           </div>
           <div class="card-arrow">➜</div>
@@ -20,8 +20,8 @@
        <div class="m-menu-card disabled">
           <div class="card-icon">🎲</div>
           <div class="card-label">
-            <div class="card-title">RNG ENGINE</div>
-            <div class="card-desc">Optimized for Desktop</div>
+            <div class="card-title">주사위 엔진</div>
+            <div class="card-desc">데스크탑 전용 (Desktop Only)</div>
           </div>
        </div>
        
@@ -29,8 +29,8 @@
        <div class="m-menu-card disabled">
           <div class="card-icon">⚔️</div>
           <div class="card-label">
-            <div class="card-title">COMBAT SIM</div>
-            <div class="card-desc">Optimized for Desktop</div>
+            <div class="card-title">전투 시뮬레이션</div>
+            <div class="card-desc">데스크탑 전용 (Desktop Only)</div>
           </div>
        </div>
        
@@ -38,8 +38,8 @@
        <div class="m-menu-card disabled">
           <div class="card-icon">🏗️</div>
           <div class="card-label">
-             <div class="card-title">BUILDER</div>
-             <div class="card-desc">Optimized for Desktop</div>
+             <div class="card-title">캐릭터 빌더</div>
+             <div class="card-desc">데스크탑 전용 (Desktop Only)</div>
           </div>
        </div>
     </div>
@@ -47,13 +47,12 @@
 
     <!-- System Status Log -->
     <div class="m-system-log">
-       <div class="log-head">> SYSTEM LOG_</div>
+       <div class="log-head">> 시스템 로그 (SYSTEM LOG)</div>
        <div class="log-content">
           <div class="log-line"><span class="info">[INFO]</span> Mobile Access Detected</div>
-          <div class="log-line"><span class="warn">[WARN]</span> Rendering 3D modules... failed</div>
-          <div class="log-line"><span class="sys">[SYS]</span> Fallback to Lite Mode</div>
-          <div class="log-line"><span class="ok">[OK]</span> Core protocols loaded</div>
-          <div class="log-line"><span class="ok">[OK]</span> Connection Stable</div>
+          <div class="log-line"><span class="warn">[WARN]</span> 3D Modules Disabled</div>
+          <div class="log-line"><span class="sys">[SYS]</span> Running Lite Mode</div>
+          <div class="log-line"><span class="ok">[OK]</span> Core Protocols Loaded</div>
        </div>
     </div>
 

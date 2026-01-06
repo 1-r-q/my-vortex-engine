@@ -1,5 +1,5 @@
 <template>
-  <div class="mobile-home" @touchstart.once="handleInteraction" @click.once="handleInteraction">
+  <div class="mobile-home" :class="{ 'shake-anim': isLaunching }" @touchstart.once="handleInteraction" @click.once="handleInteraction">
     <div class="mobile-header">
       <div class="logo">VORTEX ENGINE</div>
       <div class="sub-logo">SYSTEM v19.0.4</div>
@@ -16,6 +16,10 @@
 
     <!-- Navigation List -->
     <div class="mobile-nav">
+      <button class="nav-btn" @click="$emit('openModule', 'scenario')">
+        <span class="icon">🎯</span>
+        <span class="label">작전 (LOG)</span>
+      </button>
       <button class="nav-btn" @click="$emit('openModule', 'history')">
         <span class="icon">📜</span>
         <span class="label">역사 (HISTORY)</span>
@@ -46,11 +50,27 @@
       </div>
       <div class="version-row">VORTEX MOBILE INTERFACE</div>
     </div>
+
+    <!-- Cinematic Overlays (Animation) -->
+    <div v-if="showFlash" class="cinematic-flash"></div>
+    <div v-if="showBlackout" class="cinematic-blackout">
+      <div class="cinematic-dialogue" :class="{ 'fade-out': dialogueFading }">
+        {{ dialogueContent }}<span class="cursor">_</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { useSteamSound } from '../composables/useSteamSound';
+
+const props = defineProps({
+  isLaunching: Boolean,
+  showFlash: Boolean,
+  showBlackout: Boolean,
+  dialogueContent: String,
+  dialogueFading: Boolean
+});
 
 defineEmits(['openModule', 'runSequence']);
 
@@ -204,5 +224,82 @@ const handleInteraction = () => {
   0% { opacity: 0.5; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.05); }
   100% { opacity: 0.5; transform: scale(1); }
+}
+
+.shake-anim {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) infinite both;
+  color: #ff3333 !important; /* Turn red on launch */
+  border-color: #ff3333 !important;
+}
+
+.shake-anim .core-circle {
+  border-color: #ff3333 !important;
+  animation-duration: 0.2s !important;
+}
+
+.shake-anim .init-btn {
+  background: #ff3333 !important;
+  color: #000 !important;
+  box-shadow: 0 0 50px #ff3333 !important;
+  transform: scale(1.1);
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+.cinematic-flash {
+  position: fixed;
+  inset: 0;
+  background: white;
+  z-index: 9999;
+  animation: flash-smooth 1.5s ease-in forwards;
+}
+
+@keyframes flash-smooth {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.cinematic-blackout {
+  position: fixed;
+  inset: 0;
+  background: black;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+}
+
+.cinematic-dialogue {
+  font-family: 'Share Tech Mono', 'Noto Sans KR', sans-serif;
+  font-size: 1.2rem;
+  font-weight: bold;
+  line-height: 1.5;
+  color: #ffb000;
+  text-shadow: 0 0 10px rgba(255, 176, 0, 0.8);
+  transition: all 1s ease;
+  white-space: pre-wrap;
+}
+
+.cinematic-dialogue.fade-out {
+  opacity: 0;
+  filter: blur(5px);
+}
+
+.cursor {
+  animation: blink 1s infinite;
+  display: inline-block;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 </style>

@@ -60,7 +60,9 @@
         <div class="mc-detail-img-box" @click="openGallery">
            <img v-if="selectedCharacter.image" :src="withBase(selectedCharacter.image)" />
            <div v-else class="mc-detail-placeholder">{{ selectedCharacter.name[0] }}</div>
-           <div class="mc-img-hint">🔍</div>
+           <div class="mc-img-overlay">
+             <span class="view-text">📷 보기</span>
+           </div>
         </div>
         <div class="mc-detail-title-box">
           <h2 class="mc-d-name">{{ selectedCharacter.name }}</h2>
@@ -70,8 +72,12 @@
       </div>
       
       <div class="mc-detail-body">
+        <button class="mc-gallery-btn" @click="openGallery">
+           📷 전체 갤러리 보기
+        </button>
+
         <section class="mc-section">
-          <div class="mc-sec-title">>> STATS</div>
+          <div class="mc-sec-title">>> 능력치 (STATS)</div>
           <div class="mc-stats-grid">
             <div class="mc-stat-item" v-for="(val, key) in selectedCharacter.stats" :key="key">
               <span class="mc-stat-label">{{ key.toUpperCase() }}</span>
@@ -84,12 +90,12 @@
         </section>
 
         <section class="mc-section">
-          <div class="mc-sec-title">>> PROFILE</div>
+          <div class="mc-sec-title">>> 프로필 (PROFILE)</div>
           <p class="mc-desc-text">{{ selectedCharacter.description }}</p>
         </section>
 
         <section class="mc-section" v-if="selectedCharacter.quotes && selectedCharacter.quotes.length">
-          <div class="mc-sec-title">>> VOICE LOG</div>
+          <div class="mc-sec-title">>> 음성 기록 (VOICE LOG)</div>
           <div class="mc-quote-box">
             "{{ selectedCharacter.quotes[0] }}"
           </div>
@@ -278,10 +284,23 @@ const getRank = (stats) => {
 }
 .mc-detail-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
-.mc-img-hint {
-  position: absolute; bottom: 2px; right: 2px;
-  font-size: 0.8rem; background: rgba(0,0,0,0.5); padding: 2px; opacity: 0.7;
+.mc-img-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s;
 }
+.mc-detail-img-box:active .mc-img-overlay { opacity: 1; }
+
+.view-text { color: #fff; font-size: 0.8rem; font-weight: bold; text-shadow: 0 0 5px #000; }
+
+.mc-gallery-btn {
+  width: 100%; padding: 12px; margin-bottom: 20px;
+  background: #222; border: 1px solid #444; color: #ffb000;
+  font-family: inherit; font-weight: bold;
+  border-radius: 4px; transition: all 0.2s;
+}
+.mc-gallery-btn:active { transform: scale(0.98); background: #333; }
 
 .mc-detail-title-box { flex: 1; }
 .mc-d-name { margin: 0 0 5px 0; font-size: 1.5rem; color: #fff; line-height: 1.2; }

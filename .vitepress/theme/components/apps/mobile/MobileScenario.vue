@@ -3,8 +3,8 @@
     <!-- Header -->
     <header class="m-header">
       <div class="m-header-top">
-        <h1 class="m-title">MISSION_LOG</h1>
-        <div class="m-status-ind">OP-STATUS: ACTIVE</div>
+        <h1 class="m-title">작전 기록 (MISSION_LOG)</h1>
+        <div class="m-status-ind">상태: 활성 (ACTIVE)</div>
       </div>
       <div class="m-progress-bar">
         <div class="m-progress-fill" :style="{ width: progressPercent + '%' }"></div>
@@ -36,22 +36,22 @@
           </div>
           
           <div class="m-desc-box">
-             <div class="m-label">>> BRIEFING</div>
+             <div class="m-label">>> 브리핑 (BRIEFING)</div>
              <p>{{ isUnlocked(index) ? chapter.bg : 'ENCRYPTED DATA // ACCESS DENIED' }}</p>
           </div>
           
           <div class="m-desc-box alert" v-if="isUnlocked(index) && chapter.crisis">
-             <div class="m-label red">>> THREAT</div>
+             <div class="m-label red">>> 위협 요소 (THREAT)</div>
              <p>{{ chapter.crisis }}</p>
           </div>
 
           <!-- Action Button -->
           <div class="m-actions">
             <button class="m-btn-start" v-if="isUnlocked(index)" @click.stop="startMission(index)">
-              INITIATE SIMULATION
+              시뮬레이션 개시 (INITIATE)
             </button>
              <button class="m-btn-locked" v-else @click.stop="handleLockedClick(index)">
-              ACCESS DENIED
+              접근 불가 (ACCESS DENIED)
             </button>
           </div>
         </div>
@@ -64,12 +64,12 @@
     <!-- Password Modal -->
     <div class="m-modal" v-if="showPasswordModal">
       <div class="m-modal-box">
-        <h3 class="m-modal-title">SECURITY CHECK</h3>
-        <p class="m-modal-msg">ENTER ACCESS CODE</p>
+        <h3 class="m-modal-title">보안 검사 (SECURITY CHECK)</h3>
+        <p class="m-modal-msg">암호를 입력하십시오.</p>
         <input type="text" v-model="passwordInput" class="m-input" placeholder="CODE" />
         <div class="m-modal-actions">
-          <button class="m-btn outline" @click="showPasswordModal = false">CANCEL</button>
-          <button class="m-btn solid" @click="verifyPassword">VERIFY</button>
+          <button class="m-btn outline" @click="showPasswordModal = false">취소</button>
+          <button class="m-btn solid" @click="verifyPassword">확인</button>
         </div>
       </div>
     </div>

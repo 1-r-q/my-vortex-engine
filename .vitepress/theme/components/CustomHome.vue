@@ -2,6 +2,11 @@
   <!-- Mobile Home View -->
   <MobileHome 
     v-if="isMobile" 
+    :is-launching="isLaunching"
+    :show-flash="showFlash"
+    :show-blackout="showBlackout"
+    :dialogue-content="dialogueContent"
+    :dialogue-fading="dialogueFading"
     @runSequence="runSequence"
     @openModule="openModule"
   />
