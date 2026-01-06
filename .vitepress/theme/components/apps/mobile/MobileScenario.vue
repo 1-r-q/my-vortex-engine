@@ -69,6 +69,11 @@
       <div class="m-modal-box">
         <h3 class="m-modal-title">보안 검사 (SECURITY CHECK)</h3>
         <p class="m-modal-msg">암호를 입력하십시오.</p>
+        
+        <div v-if="getHiddenHint(targetUnlockIndex)" class="m-hint-text" style="margin-bottom: 15px;">
+           🔑 KEY DETECTED: {{ getHiddenHint(targetUnlockIndex) }}
+        </div>
+
         <input type="text" v-model="passwordInput" class="m-input" placeholder="CODE" />
         <div class="m-modal-actions">
           <button class="m-btn outline" @click="showPasswordModal = false">취소</button>
@@ -256,6 +261,9 @@ const startMission = (index) => {
 }
 
 const progressPercent = computed(() => {
+    if (selectedIndex.value !== -1) {
+        return Math.round(((selectedIndex.value + 1) / chapters.length) * 100);
+    }
     return Math.round((unlockedIndices.value.length / chapters.length) * 100);
 });
 
@@ -349,6 +357,7 @@ watch(unlockedIndices, (newVal) => {
   flex: 1;
   overflow-y: auto;
   padding: 10px;
+  padding-bottom: 100px;
 }
 
 .m-chapter-card {
