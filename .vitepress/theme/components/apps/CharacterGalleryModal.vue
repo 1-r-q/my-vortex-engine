@@ -23,20 +23,26 @@
             <div class="corner bl"></div>
             <div class="corner br"></div>
             
-            <div class="image-container" v-if="currentImage">
+            <div class="image-container" v-if="currentImage" @click="handleImageClick" style="cursor: pointer;">
               <img :src="currentImage" :alt="characterName" class="main-image" />
               <div class="scan-line"></div>
               
-              <!-- Description Box -->
-              <div class="image-caption-box">
-                <div class="caption-inner">
-                  <div class="caption-header">
-                    <span class="caption-icon">◈</span>
-                    <span class="caption-title">ANALYSIS DATA</span>
-                  </div>
-                  <div class="caption-content">
-                    {{ getImageDescription(currentIdx) }}
-                  </div>
+              <!-- Top-Right Info Box (Emotion/Status) -->
+              <div class="image-info-box">
+                <div class="info-header">
+                    <span class="info-icon">◈</span>
+                    <span class="info-title">VISUAL ANALYSIS</span>
+                </div>
+                <div class="info-content">
+                    <div class="info-row">
+                        <span class="label">EMOTION:</span>
+                        <span class="value">{{ getImageDescription(currentIdx) }}</span>
+                    </div>
+                    <!-- Display password if unlocked -->
+                    <div class="info-row password-row" v-if="isPasswordUnlocked && fullCharacterData?.unlockPassword">
+                        <span class="label text-red">KEY:</span>
+                        <span class="value highlight-red">{{ fullCharacterData.unlockPassword }}</span>
+                    </div>
                 </div>
               </div>
             </div>
@@ -54,17 +60,41 @@
           </div>
         </div>
 
-        <!-- Thumbnails -->
-        <div class="thumbnails-strip">
-          <div 
-            v-for="(img, idx) in images" 
-            :key="idx"
-            class="thumb-item"
-            :class="{ active: currentIdx === idx }"
-            @click="currentIdx = idx"
-          >
-            <img :src="img" loading="lazy" />
-            <div class="thumb-overlay"></div>
+        <!-- Bottom Layout: Thumbnails + Dialogue -->
+        <div class="bottom-layout">
+          <!-- Thumbnails (Left) -->
+          <div class="thumbnails-container">
+            <div class="thumbnails-strip">
+              <div 
+                v-for="(img, idx) in images" 
+                :key="idx"
+                class="thumb-item"
+                :class="{ active: currentIdx === idx }"
+                @click="selectThumbnail(idx)"
+                @mouseenter="playHover"
+              >
+                <img :src="img" loading="lazy" />
+                <div class="thumb-overlay"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dialogue (Right) -->
+          <div class="dialogue-panel">
+            <div class="dialogue-header">
+                <span class="char-name">{{ characterName }}</span>
+                <div class="sync-status" v-if="clickCount > 0">
+                    <span class="label">SYNC</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" :style="{ width: Math.min(clickCount * 5, 100) + '%' }"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="dialogue-body">
+                <div class="quote-text" :class="{ 'highlight': isHiddenUnlocked }">
+                    "{{ displayedQuote }}"<span v-if="isTyping" class="cursor">_</span>
+                </div>
+            </div>
           </div>
         </div>
 
@@ -81,6 +111,9 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { withBase } from 'vitepress';
+import { characterData } from '../../data/characterData';
+import { useSteamSound } from '../../composables/useSteamSound';
+import { unlockPassword, unlockHiddenQuotes } from '../../stores/unlockedStore';
 
 const props = defineProps({
   isOpen: Boolean,
@@ -91,10 +124,51 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
+const { playClick, playDataTransmit, playTyping, playSelect, playHover, playUnlock, playSound } = useSteamSound();
+
 const images = ref([]);
 const currentIdx = ref(0);
+const clickCount = ref(0);
+const isHiddenUnlocked = ref(false); // 10 clicks
+const isPasswordUnlocked = ref(false); // 20 clicks
+const currentQuote = ref('');
+const displayedQuote = ref('');
+const isTyping = ref(false);
+const typingTimeout = ref(null);
 
-// Glob import to find images in public/images
+// Find full character data for quotes/password
+const fullCharacterData = computed(() => {
+  if (!props.characterId) return null;
+  for (const faction of characterData) {
+    const found = faction.characters.find(c => c.id === props.characterId);
+    if (found) return found;
+  }
+  return null;
+});
+
+// Load Persistence
+const loadPersistence = () => {
+    if (typeof window === 'undefined' || !props.characterId) return;
+    const key = `vortex-char-clicks-${props.characterId}`;
+    const stored = localStorage.getItem(key);
+    clickCount.value = stored ? parseInt(stored) : 0;
+    isHiddenUnlocked.value = clickCount.value >= 10;
+    isPasswordUnlocked.value = clickCount.value >= 20;
+
+    // Sync with global store
+    if (isHiddenUnlocked.value) unlockHiddenQuotes(props.characterId);
+    if (isPasswordUnlocked.value) unlockPassword(props.characterId);
+    
+    // Pick initial quote
+    pickRandomQuote();
+};
+
+const savePersistence = () => {
+    if (typeof window === 'undefined' || !props.characterId) return;
+    const key = `vortex-char-clicks-${props.characterId}`;
+    localStorage.setItem(key, clickCount.value.toString());
+};
+
 const imageGlobs = import.meta.glob('../../../../public/images/**/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
 
 const loadImages = () => {
@@ -131,11 +205,7 @@ const loadImages = () => {
     
     if (index !== -1) {
       // Extract the path starting from /images/ for the URL
-      // normalizedPath: .../public/images/Aria/1.png
-      // urlPath: /images/Aria/1.png
       const urlPath = normalizedPath.substring(index + '/public'.length);
-      
-      // To check the folder name, we look at what comes after /images/
       const pathAfterImages = urlPath.substring('/images/'.length); // Aria/1.png
       
       const parts = pathAfterImages.split('/');
@@ -164,8 +234,91 @@ const loadImages = () => {
 watch(() => props.isOpen, (newVal) => {
   if (newVal) {
     loadImages();
+    loadPersistence();
+  } else {
+     if (typingTimeout.value) clearTimeout(typingTimeout.value);
   }
 });
+
+const startTyping = (text) => {
+  if (typingTimeout.value) {
+    clearTimeout(typingTimeout.value);
+    typingTimeout.value = null;
+  }
+  
+  displayedQuote.value = '';
+  isTyping.value = true;
+  let i = 0;
+  
+  const typeChar = () => {
+    if (i < text.length) {
+      displayedQuote.value += text.charAt(i);
+      i++;
+      if (i % 3 === 0) playTyping();
+      typingTimeout.value = setTimeout(typeChar, 30);
+    } else {
+      isTyping.value = false;
+      typingTimeout.value = null;
+    }
+  };
+  typeChar();
+};
+
+const pickRandomQuote = () => {
+  if (!fullCharacterData.value) return;
+  const char = fullCharacterData.value;
+  let pool = [...(char.quotes || [])];
+  
+  if (isHiddenUnlocked.value && char.hiddenQuotes) {
+    pool = [...pool, ...char.hiddenQuotes];
+  }
+  
+  if (pool.length === 0) {
+      // Default fallback
+      startTyping(`ARCHIVE_ACCESS: ${props.characterName} // STANDBY`);
+      return;
+  }
+
+  const nextQuote = pool[Math.floor(Math.random() * pool.length)];
+  currentQuote.value = nextQuote;
+  startTyping(nextQuote);
+};
+
+const handleImageClick = () => {
+  if (!props.isOpen) return;
+
+  const hasPassword = !!fullCharacterData.value?.unlockPassword;
+  const maxSync = hasPassword ? 20 : 10;
+  
+  if (clickCount.value < maxSync) {
+    clickCount.value++;
+    savePersistence();
+  }
+
+  // Check Milestones
+  if (clickCount.value === 10 && !isHiddenUnlocked.value) {
+      isHiddenUnlocked.value = true;
+      unlockHiddenQuotes(props.characterId);
+      playUnlock();
+      startTyping(">> 시스템 경고: 숨겨진 인격 아카이브가 잠금 해제되었습니다.");
+      return;
+  }
+
+  if (clickCount.value === 20 && !isPasswordUnlocked.value) {
+      isPasswordUnlocked.value = true;
+      unlockPassword(props.characterId);
+      if (fullCharacterData.value?.unlockPassword) {
+         playUnlock();
+         startTyping(`>> 복호화 완료. 보안 키: [${fullCharacterData.value.unlockPassword}]`);
+      } else {
+         startTyping(">> 시스템: 연관된 보안 키를 찾을 수 없습니다.");
+      }
+      return;
+  }
+
+  playClick();
+  pickRandomQuote();
+};
 
 const currentImage = computed(() => images.value[currentIdx.value]);
 const currentFileName = computed(() => {
@@ -198,15 +351,25 @@ const getImageDescription = (idx) => {
 
 const nextImage = () => {
   if (images.value.length === 0) return;
+  playSound('click', 0.2); // Lower volume
   currentIdx.value = (currentIdx.value + 1) % images.value.length;
 };
 
 const prevImage = () => {
   if (images.value.length === 0) return;
+  playSound('click', 0.2); // Lower volume
   currentIdx.value = (currentIdx.value - 1 + images.value.length) % images.value.length;
 };
 
+const selectThumbnail = (idx) => {
+    if (currentIdx.value !== idx) {
+        playSelect();
+        currentIdx.value = idx;
+    }
+};
+
 const close = () => {
+  playClick();
   emit('close');
 };
 
@@ -340,45 +503,179 @@ onMounted(() => {
   pointer-events: none;
 }
 
-/* Caption Box */
-.image-caption-box {
+/* Image Info Box (Top Right) */
+.image-info-box {
   position: absolute;
-  bottom: 30px;
-  right: 30px;
+  top: 20px;
+  right: 20px;
   background: rgba(10, 5, 2, 0.9);
   border: 1px solid #ffb000;
-  border-left: 4px solid #ffb000;
-  padding: 15px;
-  min-width: 200px;
-  max-width: 300px;
+  padding: 10px 15px;
+  min-width: 180px;
   z-index: 20;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.8);
-  transform: skewX(-10deg);
   backdrop-filter: blur(4px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
-.caption-inner {
-  transform: skewX(10deg);
-}
-
-.caption-header {
+.info-header {
   display: flex;
   align-items: center;
   gap: 8px;
   border-bottom: 1px solid rgba(255, 176, 0, 0.3);
   padding-bottom: 5px;
   margin-bottom: 8px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #ffb000;
-  opacity: 0.8;
   letter-spacing: 1px;
 }
 
-.caption-content {
-  font-size: 1rem;
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.info-row .label {
+  color: #888;
+  margin-right: 10px;
+}
+
+.info-row .value {
   color: #fff;
   font-weight: bold;
+}
+
+.text-red { color: #ff3333 !important; }
+.highlight-red { color: #ff3333 !important; text-shadow: 0 0 5px rgba(255, 50, 50, 0.5); }
+
+
+/* Bottom Layout */
+.bottom-layout {
+  display: flex;
+  gap: 20px;
+  height: 140px;
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+.thumbnails-container {
+  flex: 0 0 60%;
+  border: 1px solid rgba(255, 176, 0, 0.3);
+  background: rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  position: relative;
+}
+
+.thumbnails-strip {
+  height: 100%;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px;
+}
+
+.thumb-item {
+  height: 100%;
+  aspect-ratio: 1;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid transparent;
+  opacity: 0.6;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumb-item:hover, .thumb-item.active {
+  opacity: 1;
+  border-color: #ffb000;
+}
+
+.thumb-item.active .thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 176, 0, 0.2);
+}
+
+/* Dialogue Panel (Moved to Bottom Right) */
+.dialogue-panel {
+  flex: 1;
+  background: rgba(10, 5, 2, 0.95);
+  border: 1px solid #ffb000;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(255,176,0,0.1);
+}
+
+.dialogue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(255,176,0,0.3);
+}
+
+.char-name {
   font-family: 'Orbitron', sans-serif;
+  font-size: 1.0rem;
+  color: #ffb000;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.progress-bar {
+  width: 60px;
+  height: 4px;
+  background: rgba(255, 176, 0, 0.2);
+  border: 1px solid rgba(255, 176, 0, 0.3);
+}
+
+.progress-fill {
+  height: 100%;
+  background: #ffb000;
+  transition: width 0.3s ease;
+}
+
+.dialogue-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 5px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #ddd;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.quote-text {
+  white-space: pre-wrap;
+}
+
+.quote-text.highlight {
+    color: #ffd700;
 }
 
 @keyframes scan {
@@ -497,39 +794,75 @@ onMounted(() => {
     border: none;
   }
 
-  .image-caption-box {
-    position: relative;
-    bottom: auto;
-    right: auto;
-    width: 100%;
-    max-width: none;
-    transform: none;
-    border-left: 1px solid #ffb000; /* Reset skew border */
-    margin-top: -60px; /* Pull up over image slightly or sit below */
-    background: rgba(10, 5, 2, 0.95);
-  }
-
-  .caption-inner {
-    transform: none;
+  .image-info-box {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    left: auto;
+    width: auto;
+    margin-top: 0;
+    font-size: 0.8em;
   }
 
   .main-viewport {
     flex-direction: column;
     justify-content: flex-start;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+  
+  .viewport-frame {
+     display: flex;
+     flex-direction: column;
+     align-items: stretch;
   }
 
   .image-container {
-    height: 70%; /* Reserve space for other elements */
-    align-items: center;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Stack bottom layout vertically on mobile */
+  .bottom-layout {
+    flex-direction: column;
+    height: auto;
+    gap: 10px;
+    margin-top: 10px;
+    flex-shrink: 0;
+  }
+
+  .thumbnails-container {
+    height: 80px; /* Fixed height for thumbnails strip on mobile */
+    flex: none;
+    width: 100%;
+  }
+  
+  .thumbnails-strip {
+    height: 100%;
+  }
+
+  .dialogue-panel {
+    min-height: 100px;
+    max-height: 150px; /* Limit height */
   }
 
   .nav-btn {
-    padding: 30px 15px; /* Larger touch area */
-    background: rgba(0,0,0,0.2); /* Less intrusive */
-  }
-
-  .thumbnails-strip {
-    height: 60px;
+    padding: 20px 10px;
+    background: rgba(0,0,0,0.5); 
   }
 }
+
+.quote-text {
+    font-size: 1.1em;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    /* min-height removed */
+}
+.quote-text.highlight {
+    color: #ffd700;
+}
+.cursor {
+    animation: blink 1s infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
 </style>

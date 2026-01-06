@@ -321,9 +321,7 @@ watch(() => props.isOpen, (newVal) => {
   padding-top: max(0px, env(safe-area-inset-top));
   height: calc(50px + env(safe-area-inset-top));
   border-bottom: 1px solid #333;
-  background: rgba(10, 10, 10, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: #111; /* Removed backdrop-filter for performance */
 }
 
 .header-left {
@@ -409,13 +407,16 @@ watch(() => props.isOpen, (newVal) => {
 }
 
 /* Effects */
+/* Mobile Performance Optimization: Simplify gradients if needed in future */
 .scanlines {
   position: absolute;
   inset: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-  background-size: 100% 2px, 3px 100%;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size: 100% 3px, 3px 100%;
   pointer-events: none;
   z-index: 3;
+  /* Promote to layer to avoid repaint */
+  transform: translateZ(0);
 }
 
 .glitch-overlay {

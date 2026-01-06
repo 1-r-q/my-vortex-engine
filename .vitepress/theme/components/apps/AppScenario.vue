@@ -128,6 +128,13 @@
               <div class="access-denied-box" :class="{ 'interactive': selectedChapter.relatedChar }">
                 <div class="denied-title">ACCESS DENIED</div>
                 <div class="denied-sub">ENCRYPTED DATA STREAM DETECTED</div>
+                
+                <!-- Display Hint if Unlocked -->
+                <div class="unlock-hint-overlay" v-if="unlockedHints[selectedIndex]">
+                   <div class="hint-title">>> DECRYPTION KEY FOUND <<</div>
+                   <div class="hint-code">{{ unlockedHints[selectedIndex] }}</div>
+                </div>
+
                 <div class="hex-dump">{{ randomHex }}</div>
                 <div class="decrypt-hint" v-if="selectedChapter.relatedChar">
                   >> SIGNAL DETECTED: {{ selectedChapter.relatedChar }} <<
@@ -205,6 +212,7 @@ import { usePageTransition } from '../../transitionState';
 import { useSteamSound } from '../../composables/useSteamSound';
 import { withBase } from 'vitepress';
 import MobileScenario from './mobile/MobileScenario.vue';
+import { characterData } from '../../data/characterData';
 
 const emit = defineEmits(['close']);
 const { startTransition } = usePageTransition();
@@ -236,8 +244,44 @@ const hiddenDialogText = ref('');
 const showPasswordDialog = ref(false);
 const passwordInput = ref('');
 const passwordError = ref(false);
+const unlockedHints = ref({}); // { index: password }
 
 let hexInterval = null;
+
+// Find hidden hints from unlocked characters
+const checkUnlockedHints = () => {
+    if (typeof window === 'undefined') return;
+
+    // Flatten all characters
+    const allChars = [];
+    characterData.forEach(faction => {
+        faction.characters.forEach(c => allChars.push(c));
+    });
+
+    chapters.forEach((chapter, index) => {
+        // Assume stage number is index + 1
+        const stageNum = index + 1;
+        const targetChar = allChars.find(c => c.scenarioStage === stageNum);
+
+        if (targetChar) {
+            const key = `vortex-char-clicks-${targetChar.id}`;
+            const stored = localStorage.getItem(key);
+            const clicks = stored ? parseInt(stored) : 0;
+            
+            // 20 clicks to unlock password
+            if (clicks >= 20 && targetChar.unlockPassword) {
+                unlockedHints.value[index] = targetChar.unlockPassword;
+            }
+        }
+    });
+};
+
+onMounted(() => {
+    checkUnlockedHints();
+    // Re-check periodically or on interaction if needed, 
+    // but usually user unlocks in gallery then comes here.
+});
+
 
 const chapters = [
   {
@@ -1058,7 +1102,39 @@ onUnmounted(() => {
   margin-top: 20px;
   margin-left: 20px;
   font-family: monospace;
-  color: #888;
+}
+
+/* Hint overlay in locked view */
+.unlock-hint-overlay {
+  margin: 20px 0;
+  padding: 15px;
+  border: 1px solid #0f0;
+  background: rgba(0, 255, 0, 0.1);
+  color: #0f0;
+  animation: pulse-green 2s infinite;
+}
+
+.hint-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.hint-code {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 1.4rem;
+  letter-spacing: 2px;
+  background: rgba(0,0,0,0.5);
+  padding: 5px;
+}
+
+@keyframes pulse-green {
+  0% { opacity: 0.7; box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+  50% { opacity: 1; box-shadow: 0 0 20px rgba(0,255,0,0.5); }
+  100% { opacity: 0.7; box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+}
+
+/* olor: #888;
   width: 300px;
   word-break: break-all;
 }
