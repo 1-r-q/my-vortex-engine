@@ -1,30 +1,5 @@
 <template>
-  <div class="mobile-system-view" v-if="isMobile">
-    <div class="mobile-header">
-      <button @click="goHome" class="back-btn">← MENU</button>
-      <h2>SYSTEM RULES</h2>
-    </div>
-    
-    <div class="system-menu-mobile">
-      <div 
-        v-for="item in menuItems" 
-        :key="item.id" 
-        class="menu-card-mobile"
-        @click="navigateTo(item.link)"
-      >
-        <div class="menu-title-mobile">{{ item.title }}</div>
-        <div class="menu-desc-mobile">{{ item.desc }}</div>
-      </div>
-    </div>
-  </div>
-
-  <div 
-    v-else
-    class="system-tactical-map" 
-    :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome, 'is-booting': isBooting, 'boot-completed': bootCompleted, 'boot-phase-1': bootPhase === 1, 'boot-phase-2': bootPhase === 2, 'boot-phase-3': bootPhase === 3, 'boot-phase-4': bootPhase === 4, 'fx-success': screenFxType === 'critical-success', 'fx-fail': screenFxType === 'critical-fail', 'fx-jam': screenFxType === 'fail', 'critical-success': consoleState === 'critical-success', 'critical-failure': consoleState === 'critical-failure', 'failure': consoleState === 'failure' }" 
-    ref="mapContainer"
-  >
-
+  <div class="system-tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome, 'is-booting': isBooting, 'boot-completed': bootCompleted, 'boot-phase-1': bootPhase === 1, 'boot-phase-2': bootPhase === 2, 'boot-phase-3': bootPhase === 3, 'boot-phase-4': bootPhase === 4, 'fx-success': screenFxType === 'critical-success', 'fx-fail': screenFxType === 'critical-fail', 'fx-jam': screenFxType === 'fail', 'critical-success': consoleState === 'critical-success', 'critical-failure': consoleState === 'critical-failure', 'failure': consoleState === 'failure' }" ref="mapContainer">
     
     <!-- Boot Overlay (Phase 1: BIOS Terminal) -->
     <div v-if="bootPhase <= 1" class="boot-overlay">
@@ -616,44 +591,12 @@ const router = useRouter();
 const { startTransition } = usePageTransition();
 const { 
   playHover, playClick, playClickHeavy, playToggleOn, playToggleOff,
-  playGearEngage, playLeverPull, playTransition, playBack, playBeep, playBeepConfirm, playBeepAlert,
+  playGearEngage, playLeverPull, playTransition, playBeep, playBeepConfirm, playBeepAlert,
   playBootStart, playBootLine, playBootComplete, playTyping,
   playDiceRoll, playDiceStop, playCriticalSuccess, playCriticalFail,
-  playDataTransmit, playCardSelect, playSelect, playScan,
+  playDataTransmit, playCardSelect, playBack, playSelect, playScan,
   categoryVolumes, setCategoryVolume
 } = useSteamSound();
-
-// Mobile Detection
-const isMobile = ref(false);
-const checkMobile = () => {
-  if (typeof window !== 'undefined') {
-    isMobile.value = window.innerWidth <= 768;
-  }
-};
-
-const goHome = () => {
-  playBack();
-  router.go(withBase('/'));
-};
-
-const menuItems = [
-  { id: 'core', title: '핵심 규칙 (CORE)', desc: '다이스 시스템 및 기본 판정', link: '/threats/database.html#core' },
-  { id: 'combat', title: '전투 (COMBAT)', desc: '공격, 방어, 데미지 산출', link: '/threats/database.html#combat' },
-  { id: 'chars', title: '캐릭터 (CHARS)', desc: '능력치, 스킬, 특성', link: '/threats/database.html#chars' },
-  { id: 'equip', title: '장비 (EQUIP)', desc: '무기, 방어구, 아이템', link: '/threats/database.html#equip' }
-];
-
-const navigateTo = (path) => {
-  router.go(withBase(path));
-};
-
-onMounted(() => {
-  checkMobile();
-  window.addEventListener('resize', checkMobile);
-  
-  checkNavigationSource();
-  playTransition();
-});
 
 const ambientVolume = computed({
   get: () => categoryVolumes.ambient,
@@ -4509,65 +4452,5 @@ onUnmounted(() => {
     right: 2.5%;
     left: 2.5%;
   }
-}
-
-/* Mobile View Specific Styles */
-.mobile-system-view {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #050505;
-  color: #ffb000;
-  overflow-y: auto;
-  padding: 20px;
-  z-index: 2000;
-  font-family: 'Share Tech Mono', monospace;
-}
-
-.mobile-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 176, 0, 0.3);
-  padding-bottom: 10px;
-}
-
-.back-btn {
-  background: transparent;
-  border: 1px solid #ffb000;
-  color: #ffb000;
-  padding: 5px 10px;
-  margin-right: 15px;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.system-menu-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.menu-card-mobile {
-  border: 1px solid rgba(255, 176, 0, 0.2);
-  background: rgba(255, 176, 0, 0.05);
-  padding: 15px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.menu-title-mobile {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #ffcc00;
-  margin-bottom: 5px;
-}
-
-.menu-desc-mobile {
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.8);
 }
 </style>

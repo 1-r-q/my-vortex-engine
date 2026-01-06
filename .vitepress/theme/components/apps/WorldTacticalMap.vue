@@ -1,20 +1,5 @@
 <template>
-  <div class="mobile-world-view" v-if="isMobile">
-    <div class="mobile-header">
-      <button @click="goHome" class="back-btn">← MENU</button>
-      <h2>WORLD GEOMAP</h2>
-    </div>
-    <div class="world-list">
-      <div v-for="(loc, index) in locations" :key="index" class="location-card-mobile">
-        <div class="card-title-mobile">{{ loc.title }}</div>
-        <div class="card-desc-mobile">{{ loc.desc }}</div>
-        <span class="level-badge">{{ loc.level }}</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="world-tactical-map" v-else :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" ref="mapContainer">
-
+  <div class="world-tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" ref="mapContainer">
     <!-- 3D Perspective Grid Floor -->
     <div class="grid-floor">
       <div class="grid-lines"></div>
@@ -450,19 +435,6 @@ const router = useRouter();
 const { startTransition } = usePageTransition();
 const { playHover, playClick, playCardSelect, playCardFlip, playBack, playTransition, categoryVolumes, setCategoryVolume } = useSteamSound();
 
-// Mobile Detection
-const isMobile = ref(false);
-const checkMobile = () => {
-  if (typeof window !== 'undefined') {
-    isMobile.value = window.innerWidth <= 768;
-  }
-};
-
-const goHome = () => {
-  playBack();
-  router.go(withBase('/'));
-};
-
 const ambientVolume = computed({
   get: () => categoryVolumes.ambient,
   set: (val) => setCategoryVolume('ambient', val)
@@ -694,10 +666,6 @@ let timeInterval;
 let sensorInterval;
 
 onMounted(() => {
-  checkMobile();
-  window.addEventListener('resize', checkMobile);
-  playTransition(); // Play transition sound on enter
-
   // Check navigation source first
   checkNavigationSource();
   
@@ -731,7 +699,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile);
   window.removeEventListener('resize', updateDimensions);
   if (timeInterval) clearInterval(timeInterval);
   if (sensorInterval) clearInterval(sensorInterval);
@@ -2579,73 +2546,5 @@ onUnmounted(() => {
     height: auto;
     min-height: 120px;
   }
-}
-
-/* Mobile View Specific Styles */
-.mobile-world-view {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #050505;
-  color: #ffb000;
-  overflow-y: auto;
-  padding: 20px;
-  z-index: 2000;
-  font-family: 'Share Tech Mono', monospace;
-}
-
-.mobile-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 176, 0, 0.3);
-  padding-bottom: 10px;
-}
-
-.back-btn {
-  background: transparent;
-  border: 1px solid #ffb000;
-  color: #ffb000;
-  padding: 5px 10px;
-  margin-right: 15px;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.world-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.location-card-mobile {
-  border: 1px solid rgba(255, 176, 0, 0.2);
-  background: rgba(255, 176, 0, 0.05);
-  padding: 15px;
-  border-radius: 4px;
-}
-
-.card-title-mobile {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #ffcc00;
-}
-
-.card-desc-mobile {
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.level-badge {
-  display: inline-block;
-  background: rgba(255, 176, 0, 0.2);
-  padding: 2px 6px;
-  border-radius: 2px;
-  font-size: 0.7rem;
-  margin-top: 8px;
 }
 </style>

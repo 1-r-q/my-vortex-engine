@@ -1,22 +1,5 @@
 <template>
-  <div class="mobile-history-view" v-if="isMobile">
-    <div class="mobile-header">
-      <button @click="goHome" class="back-btn">← MENU</button>
-      <h2>HISTORY DATABASE</h2>
-    </div>
-    <div class="history-list">
-      <div v-for="(evt, index) in events" :key="index" class="history-card">
-        <div class="card-header">
-          <span class="year-badge">{{ evt.year }}</span>
-          <span class="integrity-badge" :class="getIntegrityClass(evt.integrity)">{{ evt.integrity }}%</span>
-        </div>
-        <div class="card-title">{{ evt.title }}</div>
-        <div class="card-desc">{{ evt.desc }}</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="tactical-map" v-else :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" ref="mapContainer">
+  <div class="tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" ref="mapContainer">
     <!-- 3D Perspective Grid Floor -->
     <div class="grid-floor">
       <div class="grid-lines"></div>
@@ -617,15 +600,15 @@ import { useSteamSound } from '../../composables/useSteamSound';
 
 const { playHover, playClick, playCardSelect, playBack, playTransition, playSelect, playDataTransmit, playTyping, categoryVolumes, setCategoryVolume } = useSteamSound();
 
-const goHome = () => {
-  playBack();
-  router.go(withBase('/'));
-};
-
 const ambientVolume = computed({
   get: () => categoryVolumes.ambient,
   set: (val) => setCategoryVolume('ambient', val)
 });
+
+const goHome = () => {
+  playBack();
+  router.go(withBase('/'));
+};
 
 // TypeWriter Component
 const TypeWriter = defineComponent({
@@ -817,22 +800,11 @@ const revealCards = () => {
   });
 };
 
-// Mobile Detection
-const isMobile = ref(false);
-const checkMobile = () => {
-  if (typeof window !== 'undefined') {
-    isMobile.value = window.innerWidth <= 768;
-  }
-};
-
 // Lifecycle
 let timeInterval;
 let resizeObserver;
 
 onMounted(() => {
-  checkMobile();
-  window.addEventListener('resize', checkMobile);
-
   checkNavigationSource();
   
   nextTick(() => {
@@ -870,7 +842,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile);
   clearInterval(timeInterval);
   window.removeEventListener('resize', updateDimensions);
   if (resizeObserver) {
@@ -3254,83 +3225,5 @@ onUnmounted(() => {
   .connection-line {
     display: none;
   }
-}
-
-/* Mobile View Specific Styles */
-.mobile-history-view {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #050505;
-  color: #ffb000;
-  overflow-y: auto;
-  padding: 20px;
-  z-index: 2000;
-  font-family: 'Share Tech Mono', monospace;
-}
-
-.mobile-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 176, 0, 0.3);
-  padding-bottom: 10px;
-}
-
-.back-btn {
-  background: transparent;
-  border: 1px solid #ffb000;
-  color: #ffb000;
-  padding: 5px 10px;
-  margin-right: 15px;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.history-card {
-  border: 1px solid rgba(255, 176, 0, 0.2);
-  background: rgba(255, 176, 0, 0.05);
-  padding: 15px;
-  border-radius: 4px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  font-size: 0.8rem;
-}
-
-.year-badge {
-  background: rgba(255, 176, 0, 0.2);
-  padding: 2px 6px;
-  border-radius: 2px;
-}
-
-.integrity-badge {
-  color: #4caf50;
-}
-.integrity-badge.medium { color: #ff9800; }
-.integrity-badge.low { color: #f44336; }
-
-.card-title {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #ffcc00;
-}
-
-.card-desc {
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.8);
 }
 </style>

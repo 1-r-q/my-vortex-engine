@@ -1,31 +1,9 @@
 <template>
-  <div class="mobile-char-view" v-if="isMobile">
-    <div class="mobile-header">
-      <button @click="goHome" class="back-btn">← MENU</button>
-      <h2>PERSONNEL DB</h2>
-    </div>
-    <div class="char-list-mobile">
-      <!-- Use existing 'characters' or 'currentCharacters' data -->
-      <div v-for="char in currentCharacters" :key="char.id" class="char-card-mobile">
-        <div class="char-img-mobile-container" v-if="char.image">
-          <img :src="withBase(char.image)" class="char-img-mobile" loading="lazy" />
-        </div>
-        <div class="char-info-mobile">
-          <div class="char-name-mobile">{{ char.name }}</div>
-          <div class="char-role-mobile">{{ char.role }}</div>
-          <div class="char-desc-mobile">{{ char.desc }}</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div 
-    v-else
     class="characters-tactical-map" 
     :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" 
     ref="mapContainer"
   >
-
     <!-- 3D Perspective Grid Floor -->
     <div class="grid-floor">
       <div class="grid-lines"></div>
@@ -391,19 +369,6 @@ const router = useRouter();
 const { startTransition } = usePageTransition();
 const { playHover, playClick, playCardSelect, playTyping, playUnlock, playBack, playTransition, playSelect, playCancel, categoryVolumes, setCategoryVolume } = useSteamSound();
 
-// Mobile Detection
-const isMobile = ref(false);
-const checkMobile = () => {
-  if (typeof window !== 'undefined') {
-    isMobile.value = window.innerWidth <= 768;
-  }
-};
-
-const goHome = () => {
-  playBack();
-  router.go(withBase('/'));
-};
-
 const ambientVolume = computed({
   get: () => categoryVolumes.ambient,
   set: (val) => setCategoryVolume('ambient', val)
@@ -699,9 +664,6 @@ const navigateTo = (path) => {
 
 // Lifecycle
 onMounted(() => {
-  checkMobile();
-  window.addEventListener('resize', checkMobile);
-  playTransition();
   checkNavigationSource();
   
   updateTime();
@@ -718,7 +680,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile);
   if (timeInterval) clearInterval(timeInterval);
   if (percentInterval) clearInterval(percentInterval);
   if (typingInterval) clearInterval(typingInterval);
@@ -2361,92 +2322,5 @@ onUnmounted(() => {
     min-height: 500px; /* Ensure ample space for card details */
     height: auto;
   }
-}
-
-/* Mobile View Specific Styles */
-.mobile-char-view {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #050505;
-  color: #ffb000;
-  overflow-y: auto;
-  padding: 20px;
-  z-index: 2000;
-  font-family: 'Share Tech Mono', monospace;
-}
-
-.mobile-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 176, 0, 0.3);
-  padding-bottom: 10px;
-}
-
-.back-btn {
-  background: transparent;
-  border: 1px solid #ffb000;
-  color: #ffb000;
-  padding: 5px 10px;
-  margin-right: 15px;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.char-list-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.char-card-mobile {
-  border: 1px solid rgba(255, 176, 0, 0.2);
-  background: rgba(255, 176, 0, 0.05);
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.char-img-mobile-container {
-  height: 200px;
-  overflow: hidden;
-  position: relative;
-  background: #111;
-  border-bottom: 1px solid rgba(255, 176, 0, 0.2);
-}
-
-.char-img-mobile {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top;
-}
-
-.char-info-mobile {
-  padding: 15px;
-}
-
-.char-name-mobile {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #ffcc00;
-  margin-bottom: 5px;
-}
-
-.char-role-mobile {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 10px;
-  font-style: italic;
-}
-
-.char-desc-mobile {
-  font-size: 0.9rem;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.8);
 }
 </style>
