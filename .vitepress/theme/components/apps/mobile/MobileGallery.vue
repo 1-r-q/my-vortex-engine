@@ -9,15 +9,24 @@
     </div>
     
     <div class="gallery-content">
-      <div class="image-container">
-        <img :src="currentImageSrc" :alt="characterName" class="gallery-image" />
+      <div class="image-container" @click="handleImageClick">
+        <img 
+            :src="currentImageSrc" 
+            :alt="characterName" 
+            class="gallery-image"
+            decoding="async" 
+            loading="eager"
+        />
         <div class="scanlines"></div>
         <div class="glitch-overlay"></div>
         
-        <!-- Emotion Label Overlay -->
+        <!-- Emotion Label Overlay (Top Right now for better visibility) -->
         <div class="emotion-label-overlay">
           {{ currentEmotionLabel }}
         </div>
+
+        <!-- Touch Hint -->
+        <div class="touch-hint" v-if="clickCount < 3">TAP SCREEN</div>
       </div>
       
       <!-- Variant Selector -->
@@ -27,23 +36,37 @@
           :key="img.id"
           class="variant-btn"
           :class="{ active: selectedVariant === index }"
-          @click="selectedVariant = index"
+          @click.stop="selectedVariant = index"
         >
           {{ index === 0 ? '소개' : index }}
         </button>
       </div>
 
-      <div class="gallery-info">
-        <h2 class="char-name">{{ characterName }}</h2>
-        <div class="char-id">{{ characterId }}</div>
+      <!-- Dialogue / Info Box -->
+      <div class="gallery-info-box">
+        <div class="info-header">
+           <h2 class="char-name">{{ characterName }}</h2>
+           <span class="click-counter" :class="{ 'gold': isHiddenUnlocked }">
+              SYNC: {{ Math.min(clickCount * 5, 100) }}%
+           </span>
+        </div>
+        
+        <div class="dialogue-area" :class="{ 'special': isHiddenUnlocked }">
+            <div class="dialogue-text">"{{ displayedQuote }}"<span class="cursor" v-if="isTyping">_</span></div>
+            <div class="dialogue-meta" v-if="showPasswordAlert">
+                Warning: Encrypted Data Exposed
+            </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, computed, watch } from 'vue';
+import { defineProps, defineEmits, ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { withBase } from 'vitepress';
+import { characterData } from '../../../data/characterData';
+import { useSteamSound } from '../../../composables/useSteamSound';
 
 const props = defineProps({
   isOpen: Boolean,
@@ -52,9 +75,19 @@ const props = defineProps({
   characterImage: String
 });
 
-defineEmits(['close']);
+const emit = defineEmits(['close']);
+
+const { playTyping, playClick, playDataTransmit } = useSteamSound();
 
 const selectedVariant = ref(0);
+const clickCount = ref(0);
+const isHiddenUnlocked = ref(false); // 10 clicks
+const isPasswordUnlocked = ref(false); // 20 clicks
+const currentQuote = ref('');
+const displayedQuote = ref('');
+const isTyping = ref(false);
+const typingTimeout = ref(null);
+const showPasswordAlert = ref(false);
 
 const emotionLabels = [
   '소개 (Intro)',
@@ -69,6 +102,123 @@ const emotionLabels = [
 const currentEmotionLabel = computed(() => {
   return emotionLabels[selectedVariant.value] || '알 수 없음 (Unknown)';
 });
+
+// Find full character data for quotes
+const fullCharacterData = computed(() => {
+  if (!props.characterId) return null;
+  // Flatten characterData structure
+  for (const faction of characterData) {
+    const found = faction.characters.find(c => c.id === props.characterId);
+    if (found) return found;
+  }
+  return null;
+});
+
+// Persistence & Initialization
+watch(() => props.isOpen, (newVal) => {
+  if (newVal && props.characterId) {
+    selectedVariant.value = 0;
+    loadPersistence();
+    // Start with a random normal quote
+    if (fullCharacterData.value && fullCharacterData.value.quotes?.length) {
+      pickRandomQuote();
+    }
+  } else {
+    // Reset when closed
+    if (typingTimeout.value) clearTimeout(typingTimeout.value);
+    showPasswordAlert.value = false;
+  }
+});
+
+const loadPersistence = () => {
+    if (typeof window === 'undefined') return;
+    const key = `vortex-char-clicks-${props.characterId}`;
+    const stored = localStorage.getItem(key);
+    clickCount.value = stored ? parseInt(stored) : 0;
+    isHiddenUnlocked.value = clickCount.value >= 10;
+    isPasswordUnlocked.value = clickCount.value >= 20;
+};
+
+const savePersistence = () => {
+    if (typeof window === 'undefined') return;
+    const key = `vortex-char-clicks-${props.characterId}`;
+    localStorage.setItem(key, clickCount.value.toString());
+};
+
+// Quote Logic
+const startTyping = (text) => {
+  if (typingTimeout.value) {
+    clearTimeout(typingTimeout.value);
+    typingTimeout.value = null;
+  }
+  
+  displayedQuote.value = '';
+  isTyping.value = true;
+  let i = 0;
+  
+  // Faster typing for gallery
+  const typeChar = () => {
+    if (i < text.length) {
+      displayedQuote.value += text.charAt(i);
+      i++;
+      if (i % 3 === 0) playTyping();
+      typingTimeout.value = setTimeout(typeChar, 25);
+    } else {
+      isTyping.value = false;
+      typingTimeout.value = null;
+    }
+  };
+  typeChar();
+};
+
+const pickRandomQuote = () => {
+  if (!fullCharacterData.value) return;
+  const char = fullCharacterData.value;
+  let pool = [...(char.quotes || [])];
+  
+  if (isHiddenUnlocked.value && char.hiddenQuotes) {
+    pool = [...pool, ...char.hiddenQuotes];
+  }
+  
+  if (pool.length === 0) {
+      startTyping("...");
+      return;
+  }
+
+  const nextQuote = pool[Math.floor(Math.random() * pool.length)];
+  currentQuote.value = nextQuote;
+  startTyping(nextQuote);
+};
+
+// Interaction Handler
+const handleImageClick = () => {
+  clickCount.value++;
+  savePersistence();
+
+  // Check Milestones
+  if (clickCount.value === 10 && !isHiddenUnlocked.value) {
+      isHiddenUnlocked.value = true;
+      playDataTransmit();
+      startTyping(">> ACCESS LEVEL UP: HIDDEN ARCHIVES UNLOCKED.");
+      return;
+  }
+
+  if (clickCount.value === 20 && !isPasswordUnlocked.value) {
+      isPasswordUnlocked.value = true;
+      // Show Password
+      if (fullCharacterData.value?.unlockPassword) {
+         playDataTransmit();
+         showPasswordAlert.value = true;
+         startTyping(`>> SYSTEM: DECRYPTION COMPLETE. KEY: [${fullCharacterData.value.unlockPassword}]`);
+      } else {
+         startTyping(">> SYSTEM: NO ENCRYPTED KEY FOUND.");
+      }
+      return;
+  }
+
+  playClick();
+  pickRandomQuote();
+};
 
 // Extract base name for folder lookup
 // e.g. "/my-base/images/characters/Aria.png" -> "Aria"
@@ -120,7 +270,7 @@ watch(() => props.isOpen, (newVal) => {
 </script>
 
 <style scoped>
-/* ... existing styles ... */
+/* Variant Selector */
 .variant-selector {
   display: flex;
   gap: 8px;
@@ -147,10 +297,8 @@ watch(() => props.isOpen, (newVal) => {
   color: #000;
   font-weight: bold;
 }
-</style>
 
-
-<style scoped>
+/* Modal Layout */
 .mobile-gallery-modal {
   position: fixed;
   top: 0;
@@ -192,6 +340,7 @@ watch(() => props.isOpen, (newVal) => {
   color: #fff;
   font-size: 1.5rem;
   padding: 5px;
+  cursor: pointer;
 }
 
 .gallery-content {
@@ -199,16 +348,16 @@ watch(() => props.isOpen, (newVal) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 20px;
+  overflow-y: auto;
 }
 
+/* Image Container */
 .image-container {
   position: relative;
   width: 100%;
   max-width: 400px;
-  /* aspect-ratio: 1; Removed fixed aspect ratio for better fit */
-  height: 55vh; /* Use viewport height */
+  height: 50vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -216,29 +365,47 @@ watch(() => props.isOpen, (newVal) => {
   background: #111;
   overflow: hidden;
   margin-bottom: 10px;
+  transform: translateZ(0); 
+  will-change: transform;
 }
 
 .emotion-label-overlay {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 8px;
-  background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+  top: 10px;
+  right: 10px;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid #ffb000;
+  border-radius: 4px;
   color: #ffb000;
-  text-align: center;
+  text-align: right;
   font-family: 'Share Tech Mono', sans-serif;
-  font-size: 14px;
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  text-shadow: 0 0 5px #000;
+  letter-spacing: 1px;
   pointer-events: none;
+  z-index: 2;
+}
+
+.touch-hint {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  text-align: center;
+  color: rgba(255,255,255,0.3);
+  font-size: 10px;
+  animation: blink 2s infinite;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .gallery-image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  will-change: opacity; 
+  position: relative;
+  z-index: 1;
 }
 
 /* Effects */
@@ -248,28 +415,102 @@ watch(() => props.isOpen, (newVal) => {
   background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
   background-size: 100% 2px, 3px 100%;
   pointer-events: none;
+  z-index: 3;
 }
 
-.gallery-info {
-  text-align: center;
+.glitch-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Dialogue Box */
+.gallery-info-box {
+  width: 100%;
+  max-width: 400px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .char-name {
   color: #fff;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   margin: 0;
   font-family: 'Noto Sans KR', sans-serif;
   font-weight: bold;
 }
 
-.char-id {
-  color: #666;
+.click-counter {
   font-family: 'Share Tech Mono', monospace;
-  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #666;
+}
+.click-counter.gold { color: #ffb000; }
+
+.dialogue-area {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #333;
+  padding: 15px;
+  border-left: 3px solid #666;
+  flex: 1;
+  min-height: 100px;
+  position: relative;
+  overflow-y: auto;
+  transition: all 0.3s;
+}
+
+.dialogue-area.special {
+  border-left-color: #ffb000;
+  background: rgba(255, 176, 0, 0.05);
+}
+
+.dialogue-text {
+  color: #ddd;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.dialogue-meta {
+  margin-top: 10px;
+  font-size: 0.7rem;
+  color: #f33;
+  font-weight: bold;
+  animation: pulse-red 2s infinite;
+}
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: #ffb000;
+  margin-left: 2px;
+  animation: blink 0.8s infinite;
+  vertical-align: middle;
+}
+
+@keyframes blink { 
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; } 
 }
 
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes pulse-red {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
 </style>
