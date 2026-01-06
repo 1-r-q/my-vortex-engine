@@ -1,5 +1,5 @@
 <template>
-  <div class="mobile-home">
+  <div class="mobile-home" @touchstart.once="handleInteraction" @click.once="handleInteraction">
     <div class="mobile-header">
       <div class="logo">VORTEX ENGINE</div>
       <div class="sub-logo">SYSTEM v19.0.4</div>
@@ -50,7 +50,15 @@
 </template>
 
 <script setup>
+import { useSteamSound } from '../composables/useSteamSound';
+
 defineEmits(['openModule', 'runSequence']);
+
+const { playAmbient, playClick } = useSteamSound();
+
+const handleInteraction = () => {
+    playAmbient();
+}
 </script>
 
 <style scoped>
@@ -66,9 +74,12 @@ defineEmits(['openModule', 'runSequence']);
   display: flex;
   flex-direction: column;
   padding: 20px;
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
   box-sizing: border-box;
   z-index: 1000;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mobile-header {
@@ -149,6 +160,12 @@ defineEmits(['openModule', 'runSequence']);
   font-size: 16px;
   text-align: left;
   cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.nav-btn:active {
+  background: rgba(255, 176, 0, 0.2);
+  transform: scale(0.98);
 }
 
 .nav-btn .icon {

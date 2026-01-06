@@ -1,7 +1,6 @@
 <template>
   <div class="mobile-market-view">
     <div class="mobile-header">
-      <button @click="$emit('close')" class="back-btn">◀ MENU</button>
       <h2>MARKET / WORKSHOP</h2>
     </div>
 
@@ -53,6 +52,8 @@
         </div>
       </div>
     </div>
+    
+    <MobileNavbar />
 
     <div class="toast-popup" v-if="toastMsg">
       {{ toastMsg }}
@@ -62,6 +63,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import MobileNavbar from './MobileNavbar.vue'
 
 const props = defineProps({
   workshopItems: { type: Array, default: () => [] },
@@ -99,6 +101,12 @@ const purchase = (item) => {
   z-index: 9999;
   display: flex;
   flex-direction: column;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .mobile-header {
@@ -106,8 +114,12 @@ const purchase = (item) => {
   display: flex;
   align-items: center;
   padding: 0 16px;
+  padding-top: max(0px, env(safe-area-inset-top));
+  height: calc(60px + env(safe-area-inset-top));
   border-bottom: 1px solid #333;
-  background: #0a0a0a;
+  background: rgba(10, 10, 10, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .back-btn {
@@ -156,8 +168,7 @@ const purchase = (item) => {
 .mobile-item-list {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
-  display: flex;
+  padding: 16px;  padding-bottom: 70px; /* Navbar Space */  display: flex;
   flex-direction: column;
   gap: 12px;
 }
@@ -168,7 +179,9 @@ const purchase = (item) => {
   border: 1px solid #333;
   padding: 12px;
   border-radius: 4px;
+  transition: all 0.2s;
 }
+.m-item-card:active { transform: scale(0.98); background: #1a1a1a; }
 
 .black-market-card {
   border-color: #522;

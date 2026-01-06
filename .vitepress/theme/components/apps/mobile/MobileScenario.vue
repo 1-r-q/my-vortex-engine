@@ -59,9 +59,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="m-footer">
-      <button class="m-btn-back" @click="$emit('close')">ABORT MISSION / RETURN</button>
-    </footer>
+    <MobileNavbar />
 
     <!-- Password Modal -->
     <div class="m-modal" v-if="showPasswordModal">
@@ -80,6 +78,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import MobileNavbar from './MobileNavbar.vue';
 
 const emit = defineEmits(['close']);
 
@@ -256,11 +255,20 @@ watch(unlockedIndices, (newVal) => {
   top: 0; left: 0;
   width: 100%;
   z-index: 9999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .m-header {
   padding: 20px;
-  background: #000;
+  padding-top: max(20px, env(safe-area-inset-top));
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 2px solid #333;
 }
 
@@ -310,6 +318,7 @@ watch(unlockedIndices, (newVal) => {
   border-radius: 4px;
   transition: all 0.2s;
 }
+.m-chapter-card:active { transform: scale(0.98); }
 
 .m-chapter-card.is-active {
   border-color: #ffb000;
@@ -397,7 +406,9 @@ watch(unlockedIndices, (newVal) => {
   font-weight: bold;
   border: none;
   cursor: pointer;
+  transition: transform 0.1s;
 }
+.m-btn-start:active, .m-btn-locked:active { transform: scale(0.97); }
 
 .m-btn-start {
   background: #ffb000;
@@ -410,9 +421,7 @@ watch(unlockedIndices, (newVal) => {
 }
 
 .m-footer {
-  padding: 15px;
-  border-top: 1px solid #333;
-  background: #000;
+  display: none;
 }
 
 .m-btn-back {

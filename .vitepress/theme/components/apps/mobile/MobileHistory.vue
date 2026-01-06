@@ -24,17 +24,14 @@
         </div>
       </div>
     </div>
-
-    <footer class="mobile-footer">
-      <button @click="$emit('close')" class="back-btn">
-        <span class="btn-icon">◀</span> RETURN TO MENU
-      </button>
-    </footer>
+    
+    <MobileNavbar />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import MobileNavbar from './MobileNavbar.vue';
 
 const emit = defineEmits(['close']);
 
@@ -82,12 +79,22 @@ const events = [
   top: 0;
   left: 0;
   z-index: 9999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .mobile-header {
   padding: 20px;
-  background: #0a0a0a;
+  padding-top: max(20px, env(safe-area-inset-top));
+  background: rgba(10, 10, 10, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   flex-shrink: 0;
+  border-bottom: 1px solid #333;
 }
 
 .header-content {
@@ -119,7 +126,10 @@ const events = [
 .timeline-list {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding: 20px;
+  padding-bottom: 80px; /* Navbar Space */
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -196,12 +206,7 @@ const events = [
 }
 
 .mobile-footer {
-  padding: 20px;
-  background: #0a0a0a;
-  border-top: 1px solid #333;
-  display: flex;
-  justify-content: center;
-  flex-shrink: 0;
+  display: none;
 }
 
 .back-btn {

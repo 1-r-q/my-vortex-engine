@@ -1,7 +1,6 @@
 <template>
   <div class="mobile-system-view">
     <div class="mobile-header">
-      <button @click="$emit('close')" class="back-btn">◀ MENU</button>
       <h2>SYSTEM ROOT</h2>
     </div>
 
@@ -44,7 +43,8 @@
           </div>
        </div>
     </div>
-    
+
+
     <!-- System Status Log -->
     <div class="m-system-log">
        <div class="log-head">> SYSTEM LOG_</div>
@@ -56,11 +56,14 @@
           <div class="log-line"><span class="ok">[OK]</span> Connection Stable</div>
        </div>
     </div>
+
+    <MobileNavbar />
   </div>
 </template>
 
 <script setup>
 import { withBase } from 'vitepress'
+import MobileNavbar from './MobileNavbar.vue'
 
 const emit = defineEmits(['close'])
 
@@ -78,12 +81,19 @@ const openLink = (path) => {
   left: 0;
   width: 100%;
   height: 100%;
+  padding-bottom: 60px; /* Space for Navbar */
   background-color: #050505;
   color: #c0c0c0;
   font-family: 'Share Tech Mono', 'Noto Sans KR', monospace;
   z-index: 9999;
   display: flex;
   flex-direction: column;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .mobile-header {
@@ -91,8 +101,12 @@ const openLink = (path) => {
   display: flex;
   align-items: center;
   padding: 0 16px;
+  padding-top: max(0px, env(safe-area-inset-top));
+  height: calc(60px + env(safe-area-inset-top));
   border-bottom: 1px solid #333;
-  background: #0a0a0a;
+  background: rgba(10, 10, 10, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .back-btn {
@@ -109,6 +123,8 @@ const openLink = (path) => {
   flex-direction: column;
   gap: 12px;
   flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px;
 }
 
 .m-menu-card {
@@ -119,7 +135,9 @@ const openLink = (path) => {
   padding: 15px;
   text-align: left;
   cursor: pointer;
+  transition: all 0.2s;
 }
+.m-menu-card:active { transform: scale(0.98); background: #222; }
 
 .m-menu-card.disabled {
   opacity: 0.5;
@@ -159,9 +177,10 @@ const openLink = (path) => {
   background: #000;
   border-top: 1px solid #333;
   padding: 16px;
-  height: 35%;
+  height: 25%;
   overflow-y: auto;
   font-size: 0.8rem;
+  padding-bottom: 80px; /* Navbar */
 }
 
 .log-head {

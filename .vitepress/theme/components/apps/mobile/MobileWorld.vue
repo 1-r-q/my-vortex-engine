@@ -1,7 +1,6 @@
 <template>
   <div class="mobile-world-view">
     <div class="mobile-header">
-      <button @click="$emit('close', '/index.html')" class="back-btn">◀ MENU</button>
       <h2>WORLD GEOMAP</h2>
     </div>
 
@@ -49,6 +48,8 @@
         </div>
       </div>
     </div>
+    
+    <MobileNavbar />
 
     <!-- Detail Modal -->
     <div v-if="selectedZone" class="m-detail-modal-overlay" @click.self="selectedZone = null">
@@ -102,6 +103,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import MobileNavbar from './MobileNavbar.vue'
 
 const props = defineProps({
   zones: {
@@ -138,15 +140,25 @@ const filteredZones = computed(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .mobile-header {
-  height: 60px;
+  min-height: 60px;
+  height: auto;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 10px 16px;
+  padding-top: max(10px, env(safe-area-inset-top));
   border-bottom: 1px solid #333;
-  background: #0a0a0a;
+  background: rgba(10, 10, 10, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   flex-shrink: 0;
 }
 
@@ -174,6 +186,10 @@ const filteredZones = computed(() => {
   background: #080808;
   overflow-x: auto;
   flex-shrink: 0;
+  scrollbar-width: none; /* Firefox */
+}
+.mobile-filter-bar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .filter-tab {
@@ -199,6 +215,7 @@ const filteredZones = computed(() => {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
+  padding-bottom: 75px; /* Navbar Space */
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -315,11 +332,16 @@ const filteredZones = computed(() => {
     border: 1px solid #444;
 }
 
+.m-zone-card:active {
+  transform: scale(0.98);
+  background: #1a1a1a;
+}
 .close-btn {
     background: none;
     border: none;
     color: #666;
     font-size: 1.5rem;
+    padding: 10px; /* Larger touch target */
 }
 
 .m-modal-scroll {

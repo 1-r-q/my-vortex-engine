@@ -4,8 +4,8 @@
     <header class="mc-header">
       <div class="mc-header-row">
         <h1 class="mc-title">PERSONNEL_DB</h1>
-        <button class="mc-back-btn" @click="handleBack">
-           {{ selectedCharacter ? '◀ BACK' : '◀ MENU' }}
+        <button v-if="selectedCharacter" class="mc-back-btn" @click="handleBack">
+           ◀ BACK
         </button>
       </div>
       
@@ -57,9 +57,10 @@
     <!-- Character Detail View -->
     <div class="mc-detail-view" v-else>
       <div class="mc-detail-header" :style="{ borderBottomColor: currentFactionColor }">
-        <div class="mc-detail-img-box">
+        <div class="mc-detail-img-box" @click="openGallery">
            <img v-if="selectedCharacter.image" :src="withBase(selectedCharacter.image)" />
            <div v-else class="mc-detail-placeholder">{{ selectedCharacter.name[0] }}</div>
+           <div class="mc-img-hint">🔍</div>
         </div>
         <div class="mc-detail-title-box">
           <h2 class="mc-d-name">{{ selectedCharacter.name }}</h2>
@@ -95,6 +96,16 @@
         </section>
       </div>
     </div>
+
+    <MobileGallery 
+      v-if="selectedCharacter"
+      :is-open="isGalleryOpen"
+      :character-name="selectedCharacter.name"
+      :character-id="selectedCharacter.id || 'Unknown ID'"
+      :character-image="selectedCharacter.image ? withBase(selectedCharacter.image) : ''"
+      @close="closeGallery"
+    />
+    <MobileNavbar />
   </div>
 </template>
 
@@ -102,6 +113,8 @@
 import { ref, computed } from 'vue';
 import { withBase } from 'vitepress';
 import { characterData } from '../../../data/characterData';
+import MobileNavbar from './MobileNavbar.vue';
+import MobileGallery from './MobileGallery.vue';
 
 const emit = defineEmits(['close']);
 
@@ -109,6 +122,7 @@ const emit = defineEmits(['close']);
 const selectedLayerId = ref('upper');
 const selectedCharacter = ref(null);
 const currentFactionColor = ref('#ffb000');
+const isGalleryOpen = ref(false);
 
 const layers = [
   { id: 'upper', shortName: 'UPPER' },
@@ -130,9 +144,17 @@ const selectCharacter = (char, faction) => {
 const handleBack = () => {
   if (selectedCharacter.value) {
     selectedCharacter.value = null;
-  } else {
-    emit('close');
   }
+};
+
+const openGallery = () => {
+  if (selectedCharacter.value && selectedCharacter.value.image) {
+    isGalleryOpen.value = true;
+  }
+};
+
+const closeGallery = () => {
+  isGalleryOpen.value = false;
 };
 
 const getRank = (stats) => {
@@ -156,11 +178,21 @@ const getRank = (stats) => {
   font-family: 'Share Tech Mono', 'Noto Sans KR', sans-serif;
   z-index: 9999;
   display: flex; flex-direction: column;
+  padding-bottom: 60px; /* Navbar Space */
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .mc-header {
   padding: 15px;
-  background: #111;
+  padding-top: max(15px, env(safe-area-inset-top));
+  background: rgba(17, 17, 17, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid #333;
 }
 
@@ -173,10 +205,13 @@ const getRank = (stats) => {
 
 .mc-back-btn {
   background: #222; border: 1px solid #444; color: #fff;
-  padding: 5px 12px; font-family: inherit; font-size: 0.8rem;
+  padding: 8px 16px; font-family: inherit; font-size: 0.8rem;
+  transition: transform 0.1s;
 }
+.mc-back-btn:active { transform: scale(0.95); }
 
-.mc-filters { width: 100%; overflow-x: auto; }
+.mc-filters { width: 100%; overflow-x: auto; scrollbar-width: none; }
+.mc-filters::-webkit-scrollbar { display: none; }
 .mc-filter-row { display: flex; gap: 8px; }
 
 .mc-filter-chip {
@@ -212,7 +247,9 @@ const getRank = (stats) => {
   background: #151515; border: 1px solid #333;
   border-radius: 4px; overflow: hidden;
   display: flex; flex-direction: column;
+  transition: all 0.2s;
 }
+.mc-char-card:active { transform: scale(0.98); opacity: 0.9; }
 
 .mc-char-thumb {
   height: 120px; background: #000; overflow: hidden;
@@ -237,8 +274,14 @@ const getRank = (stats) => {
 .mc-detail-img-box {
   width: 100px; height: 120px; background: #000; border: 1px solid #444;
   flex-shrink: 0; overflow: hidden;
+  position: relative;
 }
 .mc-detail-img-box img { width: 100%; height: 100%; object-fit: cover; }
+
+.mc-img-hint {
+  position: absolute; bottom: 2px; right: 2px;
+  font-size: 0.8rem; background: rgba(0,0,0,0.5); padding: 2px; opacity: 0.7;
+}
 
 .mc-detail-title-box { flex: 1; }
 .mc-d-name { margin: 0 0 5px 0; font-size: 1.5rem; color: #fff; line-height: 1.2; }
