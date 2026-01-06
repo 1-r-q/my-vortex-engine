@@ -1,5 +1,5 @@
 <template>
-  <div class="mobile-home" :class="{ 'shake-anim': isLaunching }" @touchstart.once="handleInteraction" @click.once="handleInteraction">
+  <div class="mobile-home" :class="{ 'shake-anim': isShaking }" @touchstart.once="handleInteraction" @click.once="handleInteraction">
     <div class="mobile-header">
       <div class="logo">VORTEX ENGINE</div>
       <div class="sub-logo">SYSTEM v19.0.4</div>
@@ -16,10 +16,6 @@
 
     <!-- Navigation List -->
     <div class="mobile-nav">
-      <button class="nav-btn" @click="$emit('openModule', 'scenario')">
-        <span class="icon">🎯</span>
-        <span class="label">작전 (LOG)</span>
-      </button>
       <button class="nav-btn" @click="$emit('openModule', 'history')">
         <span class="icon">📜</span>
         <span class="label">역사 (HISTORY)</span>
@@ -66,6 +62,7 @@ import { useSteamSound } from '../composables/useSteamSound';
 
 const props = defineProps({
   isLaunching: Boolean,
+  isShaking: Boolean,
   showFlash: Boolean,
   showBlackout: Boolean,
   dialogueContent: String,

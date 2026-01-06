@@ -3,6 +3,7 @@
   <MobileHome 
     v-if="isMobile" 
     :is-launching="isLaunching"
+    :is-shaking="isShaking"
     :show-flash="showFlash"
     :show-blackout="showBlackout"
     :dialogue-content="dialogueContent"
@@ -575,6 +576,11 @@ const navigateTo = (path) => {
 };
 
 const openModule = (moduleName) => {
+  if (isMobile.value && moduleName === 'system') {
+    alert('데스크탑 전용입니다.');
+    return;
+  }
+
   const routes = {
     history: withBase('/guide/history.html'),
     world: withBase('/world/map.html'),

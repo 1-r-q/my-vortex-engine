@@ -32,6 +32,10 @@ const navItems = [
 const currentPath = computed(() => route.path);
 
 const navigate = (path) => {
+  if (path.includes('threats/database.html')) {
+    alert('데스크탑 전용입니다.');
+    return;
+  }
   if (navigator.vibrate) navigator.vibrate(5);
   router.go(withBase(path));
 };

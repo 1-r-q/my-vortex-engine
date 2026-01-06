@@ -67,6 +67,10 @@ import MobileNavbar from './MobileNavbar.vue'
 const emit = defineEmits(['close'])
 
 const openLink = (path) => {
+    if (path.includes('threats/database.html')) {
+        alert('데스크탑 전용입니다.');
+        return;
+    }
     window.location.href = withBase(path)
 }
 </script>
