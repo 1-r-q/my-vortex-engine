@@ -146,7 +146,7 @@
               <div class="ignition-wrapper">
                 <a 
                   v-if="isUnlocked"
-                  href="https://crack.wrtn.ai/detail/69509ec4188bbbe903691b8f" 
+                  href="" 
                   target="_blank" 
                   class="ignition-switch"
                 >
