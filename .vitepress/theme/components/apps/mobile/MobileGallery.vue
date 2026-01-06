@@ -29,7 +29,7 @@
           :class="{ active: selectedVariant === index }"
           @click="selectedVariant = index"
         >
-          {{ index === 0 ? 'DEFAULT' : index }}
+          {{ index === 0 ? '소개' : index }}
         </button>
       </div>
 
@@ -57,13 +57,13 @@ defineEmits(['close']);
 const selectedVariant = ref(0);
 
 const emotionLabels = [
-  '기본 (Default)',
+  '소개 (Intro)',
+  '기본 (Normal)',
   '기쁨 (Joy)',
   '분노 (Anger)',
   '슬픔 (Sorrow)',
   '당황 (Panic)',
-  '부끄러움 (Shy)',
-  '특수 (Special)'
+  '부끄러움 (Shy)'
 ];
 
 const currentEmotionLabel = computed(() => {

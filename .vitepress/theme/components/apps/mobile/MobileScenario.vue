@@ -53,6 +53,9 @@
              <button class="m-btn-locked" v-else @click.stop="handleLockedClick(index)">
               접근 불가 (ACCESS DENIED)
             </button>
+            <div v-if="getHiddenHint(index) && !isUnlocked(index)" class="m-hint-text">
+               HIDDEN KEY FOUND: {{ getHiddenHint(index) }}
+            </div>
           </div>
         </div>
       </div>
@@ -78,6 +81,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import { characterData } from '../../../data/characterData';
 import MobileNavbar from './MobileNavbar.vue';
 
 const emit = defineEmits(['close']);
@@ -181,6 +185,42 @@ const passwordInput = ref('');
 const targetUnlockIndex = ref(-1);
 
 const isUnlocked = (index) => unlockedIndices.value.includes(index);
+
+// Helper to get matching character password if unlocked in MobileCharacters
+const getHiddenHint = (index) => {
+  if (typeof window === 'undefined') return null;
+  
+  // Find character for this stage
+  // Our chapters are 0-indexed, scenarioStage is 1-indexed probably?
+  // Let's check characterData
+  // Victoria: scenarioStage: 10 (Last chapter)
+  // Valkyrie: 9
+  // Isabella: 8
+  // So index + 1 seems correct based on data
+  
+  const stageNum = index + 1;
+  
+  // Flatten character list
+  const allChars = [];
+  characterData.forEach(faction => {
+    faction.characters.forEach(char => allChars.push(char));
+  });
+  
+  const targetChar = allChars.find(c => c.scenarioStage === stageNum);
+  
+  if (!targetChar) return null;
+  
+  // Check unlock status
+  const key = `vortex-char-clicks-${targetChar.id}`;
+  const stored = localStorage.getItem(key);
+  const clickCount = stored ? parseInt(stored) : 0;
+  
+  if (clickCount >= 10 && targetChar.unlockPassword) {
+    return targetChar.unlockPassword;
+  }
+  
+  return null;
+};
 
 const selectChapter = (index) => {
   if (selectedIndex.value === index) {
@@ -418,6 +458,22 @@ watch(unlockedIndices, (newVal) => {
 .m-btn-locked {
   background: #333;
   color: #888;
+}
+
+.m-hint-text {
+  font-size: 0.7rem;
+  color: #ff3333;
+  margin-top: 8px;
+  text-align: center;
+  opacity: 0.6;
+  font-weight: bold;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.4; }
 }
 
 .m-footer {

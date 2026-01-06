@@ -7,13 +7,13 @@
     <!-- Filter Tabs -->
     <div class="mobile-filter-bar">
       <div 
-        v-for="filter in ['ALL', 'UPPER', 'MIDDLE', 'LOWER', 'GROUND']" 
-        :key="filter"
+        v-for="filter in filters" 
+        :key="filter.id"
         class="filter-tab"
-        :class="{ active: currentFilter === filter }"
-        @click="currentFilter = filter"
+        :class="{ active: currentFilter === filter.id }"
+        @click="currentFilter = filter.id"
       >
-        {{ filter === 'ALL' ? 'ALL' : filter[0] }}
+        {{ filter.label }}
       </div>
     </div>
 
@@ -68,22 +68,35 @@
             </div>
 
             <div class="m-modal-section">
-                <h4>ENVIRONMENT</h4>
+                <h4>ENVIRONMENT (LIVE)</h4>
                 <div class="m-stat-grid">
                     <div class="stat-row">
                         <span class="s-label">DEPTH</span>
+                        <div class="mini-gauge">
+                             <div class="mini-gauge-fill" :style="{ width: getGaugeValue(selectedZone.depth, 2000) + '%' }"></div>
+                        </div>
                         <span class="s-value">{{ selectedZone.depth }}</span>
                     </div>
                     <div class="stat-row">
                         <span class="s-label">PRESSURE</span>
+                        <div class="mini-gauge">
+                             <div class="mini-gauge-fill warning" :style="{ width: getGaugeValue(selectedZone.pressure, 1500) + '%' }"></div>
+                        </div>
                         <span class="s-value">{{ selectedZone.pressure }}</span>
                     </div>
                     <div class="stat-row">
                         <span class="s-label">TEMP</span>
+                        <div class="mini-gauge">
+                             <div class="mini-gauge-fill danger" :style="{ width: getGaugeValue(selectedZone.temperature, 100) + '%' }"></div>
+                        </div>
                         <span class="s-value">{{ selectedZone.temperature }}</span>
                     </div>
                     <div class="stat-row">
                         <span class="s-label">STATUS</span>
+                         <div class="mini-gauge">
+                             <div class="mini-gauge-fill" style="width: 100%; opacity: 0.2"></div>
+                             <div class="mini-gauge-pulse" :class="selectedZone.statusClass"></div>
+                        </div>
                         <span class="s-value" :class="selectedZone.statusClass">{{ selectedZone.status }}</span>
                     </div>
                 </div>
@@ -116,6 +129,27 @@ const emit = defineEmits(['close'])
 
 const currentFilter = ref('ALL')
 const selectedZone = ref(null)
+
+const getGaugeValue = (valStr, max) => {
+    if (!valStr) return 0;
+    // Extract first number found
+    const match = valStr.match(/-?\d+(\.\d+)?/);
+    if (match) {
+        let num = Math.abs(parseFloat(match[0]));
+        // Normalize
+        let pct = (num / max) * 100;
+        return Math.min(Math.max(pct, 10), 100); // Clamp between 10% and 100%
+    }
+    return 50; // Default
+}
+
+const filters = [
+  { id: 'ALL', label: '전체' },
+  { id: 'UPPER', label: '상층' },
+  { id: 'MIDDLE', label: '중층' },
+  { id: 'LOWER', label: '하층' },
+  { id: 'GROUND', label: '지상' }
+];
 
 const filteredZones = computed(() => {
   if (currentFilter.value === 'ALL') return props.zones
@@ -382,7 +416,40 @@ const filteredZones = computed(() => {
 }
 
 .s-label { font-size: 0.7rem; color: #555; margin-bottom: 2px; }
-.s-value { font-size: 0.9rem; color: #eee; }
+.s-value { font-size: 0.9rem; color: #eee; z-index: 1;}
+
+.mini-gauge {
+    width: 100%;
+    height: 4px;
+    background: #222;
+    margin: 4px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.mini-gauge-fill {
+    height: 100%;
+    background: #00f0ff;
+    width: 0%;
+    transition: width 1s ease-out;
+}
+
+.mini-gauge-fill.warning { background: #ff8800; }
+.mini-gauge-fill.danger { background: #ff0000; }
+
+.mini-gauge-pulse {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 10px;
+    background: currentColor;
+    animation: pulse-move 2s infinite linear;
+    opacity: 0.5;
+}
+
+@keyframes pulse-move {
+    0% { left: -10%; }
+    100% { left: 110%; }
+}
 
 .m-feature-list {
     list-style: none;

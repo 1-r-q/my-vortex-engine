@@ -82,9 +82,9 @@
             <div class="mc-stat-item" v-for="(val, key) in selectedCharacter.stats" :key="key">
               <span class="mc-stat-label">{{ key.toUpperCase() }}</span>
               <div class="mc-stat-bar">
-                <div class="mc-stat-fill" :style="{ width: (val/200)*100 + '%', background: currentFactionColor }"></div>
+                <div class="mc-stat-fill" :style="{ width: ((val/200)*100 * statProgress) + '%', background: currentFactionColor }"></div>
               </div>
-              <span class="mc-stat-val">{{ val }}</span>
+              <span class="mc-stat-val">{{ Math.round(val * statProgress) }}</span>
             </div>
           </div>
         </section>
@@ -101,7 +101,7 @@
             @click="handleQuoteClick"
             :class="{ 'unlocked': isHiddenUnlocked }"
           >
-            <div class="quote-content">"{{ currentQuote }}"</div>
+            <div class="quote-content">"{{ displayedQuote }}"<span class="cursor" v-if="isTyping">_</span></div>
             <div class="quote-meta">
               <span v-if="isHiddenUnlocked" class="meta-label unlocked">🔓 HIDDEN DATA FOUND</span>
               <span v-else class="meta-label">🔒 ACCESSING CORE... ({{ clickCount }}/10)</span>
@@ -128,10 +128,13 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { withBase } from 'vitepress';
 import { characterData } from '../../../data/characterData';
+import { useSteamSound } from '../../../composables/useSteamSound';
 import MobileNavbar from './MobileNavbar.vue';
 import MobileGallery from './MobileGallery.vue';
 
 const emit = defineEmits(['close']);
+
+const { playTyping, playClick, playDataTransmit } = useSteamSound();
 
 // Local State
 const selectedLayerId = ref('upper');
@@ -143,6 +146,9 @@ const isGalleryOpen = ref(false);
 const clickCount = ref(0);
 const isHiddenUnlocked = ref(false);
 const currentQuote = ref('');
+const displayedQuote = ref(''); // For typing effect
+const isTyping = ref(false);
+const statProgress = ref(0);
 
 const layers = [
   { id: 'upper', shortName: 'UPPER' },
@@ -161,6 +167,12 @@ const selectCharacter = (char, faction) => {
   selectedCharacter.value = char;
   currentFactionColor.value = faction.color || '#ffb000';
   
+  // Animate Stats
+  statProgress.value = 0;
+  setTimeout(() => {
+    statProgress.value = 1;
+  }, 50);
+
   // Load Persistence
   if (typeof window !== 'undefined') {
     const key = `vortex-char-clicks-${char.id}`;
@@ -176,8 +188,38 @@ const selectCharacter = (char, faction) => {
   
   // Reset Quote to first one
   if (char.quotes && char.quotes.length > 0) {
+    playClick();
     currentQuote.value = char.quotes[0];
+    startTyping(currentQuote.value);
+  } else {
+    displayedQuote.value = '';
   }
+};
+
+const typingTimeout = ref(null);
+
+const startTyping = (text) => {
+  if (typingTimeout.value) {
+    clearTimeout(typingTimeout.value);
+    typingTimeout.value = null;
+  }
+  
+  displayedQuote.value = '';
+  isTyping.value = true;
+  let i = 0;
+  
+  const typeChar = () => {
+    if (i < text.length) {
+      displayedQuote.value += text.charAt(i);
+      i++;
+      if (i % 3 === 0) playTyping(); // Play sound every 3 chars
+      typingTimeout.value = setTimeout(typeChar, 30);
+    } else {
+      isTyping.value = false;
+      typingTimeout.value = null;
+    }
+  };
+  typeChar();
 };
 
 const handleQuoteClick = () => {
@@ -194,8 +236,10 @@ const handleQuoteClick = () => {
     // Unlock Check
     if (!isHiddenUnlocked.value && clickCount.value >= 10) {
         isHiddenUnlocked.value = true;
-        // Optional: Play unlock sound effect here if we had the audio context
+        playDataTransmit(); // Special sound
         alert("ACCESS GRANTED: HIDDEN ARCHIVES UNLOCKED");
+    } else {
+        playClick();
     }
     
     // Cycle Quote
@@ -207,17 +251,20 @@ const handleQuoteClick = () => {
         pool = [...pool, ...char.hiddenQuotes];
     }
     
+    // Pick next quote (Logic optimized to allow interrupting typing)
     // Random pick from pool (different from current if possible)
+    let nextQuote = currentQuote.value;
     if (pool.length > 1) {
-        let nextQuote;
-        do {
-            nextQuote = pool[Math.floor(Math.random() * pool.length)];
-        } while (nextQuote === currentQuote.value);
-        currentQuote.value = nextQuote;
+        // Simple random pick, okay to repeat occasionally creates chaotic feeling
+        nextQuote = pool[Math.floor(Math.random() * pool.length)];
     } else {
-        currentQuote.value = pool[0];
+        nextQuote = pool[0];
     }
+    
+    currentQuote.value = nextQuote;
+    startTyping(nextQuote);
 };
+
 
 const handleBack = () => {
   if (selectedCharacter.value) {
@@ -280,6 +327,17 @@ const getRank = (stats) => {
 }
 
 .mc-title { margin: 0; font-size: 1.2rem; color: #ffb000; letter-spacing: 1px; }
+
+.cursor {
+  animation: blink 1s infinite;
+  display: inline-block;
+  color: #ffb000;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
 
 .mc-quote-box.interactive {
   cursor: pointer;
@@ -438,7 +496,10 @@ const getRank = (stats) => {
 .mc-stat-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .mc-stat-label { width: 40px; font-size: 0.7rem; color: #666; text-align: right; }
 .mc-stat-bar { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
-.mc-stat-fill { height: 100%; }
+.mc-stat-fill {
+    height: 100%;
+    transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
 .mc-stat-val { width: 30px; font-size: 0.8rem; color: #fff; text-align: right; }
 
 .mc-quote-box {
