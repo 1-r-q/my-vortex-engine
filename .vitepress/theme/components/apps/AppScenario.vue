@@ -146,7 +146,6 @@
               <div class="ignition-wrapper">
                 <a 
                   v-if="isUnlocked"
-                  href="" 
                   target="_blank" 
                   class="ignition-switch"
                 >
