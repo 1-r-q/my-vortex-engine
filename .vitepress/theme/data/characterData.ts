@@ -364,7 +364,7 @@ export const characterData: Faction[] = [
         name: '적색 여제',
         role: '기사단장',
         rank: '超',
-        type: 'human',
+        type: 'machine',
         description: '인간을 증오하는 광기의 발키리입니다. 붉은 망토를 휘날리며 열화우라늄 창을 들고 돌격해오는데, 그 열기에 닿기만 해도 장갑이 녹아내립니다. 그녀는 타협을 모릅니다. 인간 편에 선 기계는 가차 없이 처단하는, 지상의 붉은 재앙입니다.',
         image: '/images/characters/Crimson Empress.png',
         stats: { pressure: 180, precision: 100, steam: 120, calculation: 130 }, // Total: 530
