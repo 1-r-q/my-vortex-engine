@@ -1,22 +1,6 @@
 <template>
-  <div class="mobile-char-view" v-if="isMobile">
-    <div class="mobile-header">
-      <button @click="goHome" class="back-btn">◀ MENU</button>
-      <h2>PERSONNEL DB</h2>
-    </div>
-    <div class="mobile-char-list">
-      <div v-for="char in currentCharacters" :key="char.id" class="m-char-card">
-        <div class="m-char-img-container" v-if="char.image">
-            <img :src="withBase(char.image)" class="m-char-img" loading="lazy" />
-        </div>
-        <div class="m-char-info">
-          <div class="m-name">{{ char.name }}</div>
-          <div class="m-role">{{ char.role }}</div>
-          <div class="m-desc">{{ char.desc }}</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <MobileCharacters v-if="isMobile" @close="handleClose" />
+
   <div 
     class="characters-tactical-map" 
     :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" 
@@ -381,11 +365,19 @@ import { usePageTransition } from '../../transitionState';
 import { useSteamSound } from '../../composables/useSteamSound';
 import { characterData } from '../../data/characterData';
 import { isPasswordUnlocked as checkPasswordUnlocked, unlockPassword, isHiddenQuotesUnlocked as checkHiddenUnlocked, unlockHiddenQuotes } from '../../stores/unlockedStore';
+import MobileCharacters from './mobile/MobileCharacters.vue';
 
 const emit = defineEmits(['close', 'openHistory', 'openWorld', 'openMarket', 'openSystem']);
 const router = useRouter();
 const { startTransition } = usePageTransition();
 const { playHover, playClick, playCardSelect, playTyping, playUnlock, playBack, playTransition, playSelect, playCancel, categoryVolumes, setCategoryVolume } = useSteamSound();
+
+const isMobile = ref(false);
+const checkMobile = () => {
+    if (typeof window !== 'undefined') {
+        isMobile.value = window.innerWidth <= 768;
+    }
+};
 
 const ambientVolume = computed({
   get: () => categoryVolumes.ambient,
@@ -683,6 +675,8 @@ const navigateTo = (path) => {
 // Lifecycle
 onMounted(() => {
   checkNavigationSource();
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
   
   updateTime();
   timeInterval = setInterval(updateTime, 1000);
@@ -698,6 +692,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
   if (timeInterval) clearInterval(timeInterval);
   if (percentInterval) clearInterval(percentInterval);
   if (typingInterval) clearInterval(typingInterval);

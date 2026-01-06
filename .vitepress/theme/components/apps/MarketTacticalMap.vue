@@ -1,20 +1,10 @@
 <template>
-  <div class="mobile-market-view" v-if="isMobile">
-    <div class="m-header">
-      <button @click="goHome" class="back-btn">◀</button>
-      <div class="m-title">BLACK MARKET</div>
-      <div class="m-credits">9,999 $</div>
-    </div>
-    <div class="m-item-list">
-       <div class="m-item" v-for="i in 5" :key="i">
-          <div class="m-item-details">
-            <span class="m-name">UNKNOWN_ITEM_{{i}}</span>
-            <span class="m-type">RESOURCE</span>
-          </div>
-          <span class="m-price">{{ 100 * i }} $</span>
-       </div>
-    </div>
-  </div>
+  <MobileMarket 
+    v-if="isMobile" 
+    :workshopItems="workshopItems" 
+    :blackMarketItems="blackMarketItems" 
+    @close="handleClose" 
+  />
   <div 
     class="market-tactical-map" 
     :class="[activeTab, { 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }]" 
@@ -361,6 +351,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter, withBase } from 'vitepress';
+import MobileMarket from './mobile/MobileMarket.vue';
 import { usePageTransition } from '../../transitionState';
 import { useSteamSound } from '../../composables/useSteamSound';
 
@@ -373,6 +364,13 @@ const ambientVolume = computed({
   get: () => categoryVolumes.ambient,
   set: (val) => setCategoryVolume('ambient', val)
 });
+
+const isMobile = ref(false);
+const checkMobile = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 768;
+  }
+};
 
 // State
 const mapContainer = ref(null);
@@ -561,6 +559,8 @@ const handleClose = () => {
 // Lifecycle
 onMounted(() => {
   checkNavigationSource();
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
   
   initItemStates();
   updateTime();
@@ -573,6 +573,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
   if (timeInterval) clearInterval(timeInterval);
   if (percentInterval) clearInterval(percentInterval);
   if (toastTimer) clearTimeout(toastTimer);

@@ -1,19 +1,5 @@
 <template>
-  <div class="mobile-system-view" v-if="isMobile">
-    <div class="m-sys-header">
-      <div class="m-sys-title">SYSTEM ROOT</div>
-    </div>
-    <div class="m-menu-grid">
-       <div class="m-menu-item" @click="goHome">
-         <div class="m-menu-label">◀ DASHBOARD</div>
-         <div class="m-menu-desc">Return to Main Terminal</div>
-       </div>
-       <div class="m-menu-item">
-         <div class="m-menu-label">RNG ENGINE</div>
-         <div class="m-menu-desc">Dice Simulation (Desktop Only)</div>
-       </div>
-    </div>
-  </div>
+  <MobileSystem v-if="isMobile" @close="handleClose" />
   <div class="system-tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome, 'is-booting': isBooting, 'boot-completed': bootCompleted, 'boot-phase-1': bootPhase === 1, 'boot-phase-2': bootPhase === 2, 'boot-phase-3': bootPhase === 3, 'boot-phase-4': bootPhase === 4, 'fx-success': screenFxType === 'critical-success', 'fx-fail': screenFxType === 'critical-fail', 'fx-jam': screenFxType === 'fail', 'critical-success': consoleState === 'critical-success', 'critical-failure': consoleState === 'critical-failure', 'failure': consoleState === 'failure' }" ref="mapContainer" v-else>
     
     <!-- Boot Overlay (Phase 1: BIOS Terminal) -->
@@ -598,6 +584,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, withBase } from 'vitepress';
+import MobileSystem from './mobile/MobileSystem.vue';
 import { usePageTransition } from '../../transitionState';
 import { useSteamSound } from '../../composables/useSteamSound';
 
@@ -619,6 +606,14 @@ const ambientVolume = computed({
 });
 
 const mapContainer = ref(null);
+
+const isMobile = ref(false);
+const checkMobile = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 768;
+  }
+};
+
 const currentTime = ref('00:00:00');
 const animatedPercent = ref(75);
 const isExiting = ref(false);
@@ -1161,6 +1156,8 @@ const switchModule = (path) => {
 
 onMounted(() => {
   checkNavigationSource();
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
   
   // Run boot sequence first
   runBootSequence();
@@ -1189,6 +1186,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
   if (timeInterval) clearInterval(timeInterval);
   if (percentInterval) clearInterval(percentInterval);
   if (specInterval) clearInterval(specInterval);

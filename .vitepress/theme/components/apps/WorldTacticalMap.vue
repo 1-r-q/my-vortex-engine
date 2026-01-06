@@ -1,22 +1,5 @@
 <template>
-  <div class="mobile-world-view" v-if="isMobile">
-    <div class="mobile-header">
-      <button @click="goHome" class="back-btn">◀ MENU</button>
-      <h2>WORLD GEOMAP</h2>
-    </div>
-    <div class="mobile-zone-list">
-      <div v-for="(zone, index) in zones" :key="index" class="m-zone-card">
-        <div class="m-zone-header">
-          <div class="m-zone-name">{{ zone.name || zone.title }}</div>
-          <div class="m-threat-badge" v-if="zone.threatLevel">LV.{{ zone.threatLevel }}</div>
-        </div>
-        <div class="m-zone-desc">{{ zone.desc || zone.description }}</div>
-        <div class="m-zone-stats">
-          <span>POP: {{ zone.population || 'UNKNOWN' }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <MobileWorld v-if="isMobile" :zones="zones" @close="handleClose" />
   <div class="world-tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" ref="mapContainer" v-else>
     <!-- 3D Perspective Grid Floor -->
     <div class="grid-floor">
@@ -445,6 +428,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, withBase } from 'vitepress';
+import MobileWorld from './mobile/MobileWorld.vue';
 import { usePageTransition } from '../../transitionState';
 import { useSteamSound } from '../../composables/useSteamSound';
 
@@ -457,6 +441,13 @@ const ambientVolume = computed({
   get: () => categoryVolumes.ambient,
   set: (val) => setCategoryVolume('ambient', val)
 });
+
+const isMobile = ref(false);
+const checkMobile = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 768;
+  }
+};
 
 // State
 const mapContainer = ref(null);
@@ -686,6 +677,8 @@ let sensorInterval;
 onMounted(() => {
   // Check navigation source first
   checkNavigationSource();
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
   
   updateDimensions();
   window.addEventListener('resize', updateDimensions);
@@ -717,6 +710,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
   window.removeEventListener('resize', updateDimensions);
   if (timeInterval) clearInterval(timeInterval);
   if (sensorInterval) clearInterval(sensorInterval);

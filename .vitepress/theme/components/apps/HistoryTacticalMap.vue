@@ -1,17 +1,5 @@
 <template>
-  <div class="mobile-history-view" v-if="isMobile">
-    <div class="m-history-title">CHRONICLE</div>
-    <div class="m-timeline">
-      <div v-for="(event, index) in events" :key="index" class="m-event-card">
-        <div class="m-year">{{ event.year }}</div>
-        <div class="m-event-title">{{ event.title }}</div>
-        <div class="m-desc">{{ event.desc || event.description }}</div>
-      </div>
-    </div>
-     <div style="text-align:center; margin-top:30px;">
-        <button @click="goHome" class="back-btn">◀ MENU</button>
-     </div>
-  </div>
+  <MobileHistory v-if="isMobile" @close="goHome" />
   <div class="tactical-map" :class="{ 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }" ref="mapContainer" v-else>
     <!-- 3D Perspective Grid Floor -->
     <div class="grid-floor">
@@ -610,8 +598,16 @@ import { ref, reactive, computed, onMounted, onUnmounted, nextTick, h, defineCom
 import { useRouter, withBase } from 'vitepress';
 import { usePageTransition } from '../../transitionState';
 import { useSteamSound } from '../../composables/useSteamSound';
+import MobileHistory from './mobile/MobileHistory.vue';
 
 const { playHover, playClick, playBack, playTransition, playTyping, categoryVolumes, setCategoryVolume } = useSteamSound();
+
+const isMobile = ref(false);
+const checkMobile = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 768; 
+  }
+};
 
 const ambientVolume = computed({
   get: () => categoryVolumes.ambient,
@@ -822,8 +818,14 @@ const revealCards = () => {
 let timeInterval;
 let resizeObserver;
 
+const handleResize = () => {
+  updateDimensions();
+  checkMobile();
+};
+
 onMounted(() => {
   checkNavigationSource();
+  checkMobile(); // Initial check
   
   nextTick(() => {
     updateDimensions();
@@ -856,12 +858,12 @@ onMounted(() => {
     }
   }, 150);
   
-  window.addEventListener('resize', updateDimensions);
+  window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
   clearInterval(timeInterval);
-  window.removeEventListener('resize', updateDimensions);
+  window.removeEventListener('resize', handleResize);
   if (resizeObserver) {
     resizeObserver.disconnect();
   }

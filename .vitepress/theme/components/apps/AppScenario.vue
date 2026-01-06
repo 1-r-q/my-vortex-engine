@@ -1,30 +1,6 @@
 <template>
-    <!-- Mobile View -->
-    <div v-if="isMobile" class="mobile-scenario-view">
-      <div class="mobile-header">
-        <h2>MISSION LOG</h2>
-        <button class="mobile-close-btn" @click="handleClose">EXIT</button>
-      </div>
-      <div class="mobile-chapter-list">
-        <div 
-          v-for="(chapter, index) in chapters" 
-          :key="index" 
-          class="mobile-chapter-card"
-          :class="{ 'active': selectedIndex === index, 'locked': !unlockedIndices.includes(index) }"
-        >
-          <div class="m-chapter-header" @click="selectedIndex = index; playClick()">
-            <span class="m-status-icon">{{ unlockedIndices.includes(index) ? '🟢' : '🔒' }}</span>
-            <span class="m-title">{{ chapter.title }}</span>
-          </div>
-          <div class="m-chapter-body" v-if="selectedIndex === index">
-            <div class="m-content">
-               <div class="m-meta-row"><span>{{ chapter.time }}</span><span>{{ chapter.loc }}</span></div>
-               <div class="m-desc">{{ chapter.bg }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <MobileScenario v-if="isMobile" @close="handleClose" />
+
   <div class="mission-terminal" :class="{ 'closing': isClosing, 'system-active': isLoaded, 'content-active': isContentLoaded }" v-else>
     <!-- Left Panel: Data Cartridge Bay -->
     <aside class="cartridge-bay">
@@ -228,6 +204,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { usePageTransition } from '../../transitionState';
 import { useSteamSound } from '../../composables/useSteamSound';
 import { withBase } from 'vitepress';
+import MobileScenario from './mobile/MobileScenario.vue';
 
 const emit = defineEmits(['close']);
 const { startTransition } = usePageTransition();
@@ -235,6 +212,13 @@ const { playClick, playUnlock, playHover, playFail, playCancel } = useSteamSound
 const isClosing = ref(false);
 const isLoaded = ref(false);
 const isContentLoaded = ref(false);
+
+const isMobile = ref(false);
+const checkMobile = () => {
+    if (typeof window !== 'undefined') {
+        isMobile.value = window.innerWidth <= 768;
+    }
+};
 
 const handleClose = () => {
   isClosing.value = true;
@@ -467,6 +451,9 @@ onMounted(() => {
     }
   }
 
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+
   hexInterval = setInterval(updateHex, 100);
   // Trigger Cinematic Boot Sequence
   setTimeout(() => {
@@ -479,6 +466,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
   if (hexInterval) clearInterval(hexInterval);
 });
 </script>
