@@ -1,5 +1,13 @@
 <template>
-  <div class="tactical-map home-nexus" ref="mapContainer" :class="{ 'shake-screen': isShaking, 'system-ready': isSystemReady, 'is-exiting': isExiting }">
+  <!-- Mobile Home View -->
+  <MobileHome 
+    v-if="isMobile" 
+    @runSequence="runSequence"
+    @openModule="openModule"
+  />
+
+  <!-- Desktop Tactical Map View -->
+  <div v-else class="tactical-map home-nexus" ref="mapContainer" :class="{ 'shake-screen': isShaking, 'system-ready': isSystemReady, 'is-exiting': isExiting }">
     <!-- Cinematic Overlays -->
     <div v-if="showFlash" class="cinematic-flash"></div>
     <div v-if="showBlackout" class="cinematic-blackout">
@@ -366,9 +374,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter, withBase } from 'vitepress';
 import { useSteamSound } from '../composables/useSteamSound';
+import MobileHome from './MobileHome.vue'; // New Mobile Component
 import HistoryTacticalMap from './apps/HistoryTacticalMap.vue';
 import WorldTacticalMap from './apps/WorldTacticalMap.vue';
 import CharactersTacticalMap from './apps/CharactersTacticalMap.vue';
@@ -381,36 +390,25 @@ const {
   playExplosion, playTyping, playTransition, playWarp, playAmbient, 
   playDataTransmit, playSequenceStart, setCategoryVolume, getCategoryVolume, preloadSound 
 } = useSteamSound();
-// const { startTransition } = usePageTransition(); // Removed global transition
-const currentTime = ref('00:00:00');
-const activeModule = ref(null);
-const isExiting = ref(false); // New state for exit animation
-const ambientVolume = ref(getCategoryVolume('ambient')); // Background volume state
 
-const updateVolume = (e) => {
-  const val = parseFloat(e.target.value);
-  ambientVolume.value = val;
-  setCategoryVolume('ambient', val);
-};
-let timeInterval;
-let vitalInterval;
-let logInterval;
-
-// Cinematic State
+// State
+const mapContainer = ref(null);
 const isSystemReady = ref(false);
 const isLaunching = ref(false);
 const isShaking = ref(false);
+const isExiting = ref(false);
 const showFlash = ref(false);
 const showBlackout = ref(false);
 const dialogueContent = ref('');
 const dialogueFading = ref(false);
+const activeModule = ref(null);
+const currentTime = ref('00:00:00');
 
 // Vitals State
 const cpuLoad = ref(45);
 const memLoad = ref(62);
 const tempLoad = ref(58);
 
-// Logs State
 const systemLogs = ref([
   { time: '00:00:01', msg: 'SYS_INIT... OK' },
   { time: '00:00:02', msg: 'CORE_LINK... ESTABLISHED' },
@@ -418,167 +416,8 @@ const systemLogs = ref([
 ]);
 const logContainer = ref(null);
 
-const modules = {
-  history: HistoryTacticalMap,
-  world: WorldTacticalMap,
-  characters: CharactersTacticalMap,
-  market: MarketTacticalMap,
-  system: SystemTacticalMap
-};
-
-const openModule = (moduleName) => {
-  // activeModule.value = moduleName;
-  const routes = {
-    history: withBase('/guide/history.html'),
-    world: withBase('/world/map.html'),
-    characters: withBase('/characters/index.html'),
-    market: withBase('/assets/list.html'),
-    system: withBase('/threats/database.html')
-  };
-
-  const targetUrl = routes[moduleName];
-  if (targetUrl) {
-    // Sound: Gear engage + transition
-    playGearEngage();
-    playTransition();
-    
-    // Mark navigation source for sidebar entrance animation
-    sessionStorage.setItem('vortex-last-page', 'home');
-    
-    // Trigger Exit Animation
-    isExiting.value = true;
-    
-    // Navigate after animation completes (1.2s)
-    setTimeout(() => {
-      router.go(targetUrl);
-    }, 1200);
-  } else {
-    activeModule.value = moduleName;
-  }
-};
-
-const closeModule = () => {
-  activeModule.value = null;
-};
-
-const updateTime = () => {
-  const now = new Date();
-  currentTime.value = now.toLocaleTimeString('en-US', { hour12: false });
-};
-
-const updateVitals = () => {
-  cpuLoad.value = Math.min(99, Math.max(10, cpuLoad.value + Math.floor(Math.random() * 10) - 5));
-  memLoad.value = Math.min(99, Math.max(20, memLoad.value + Math.floor(Math.random() * 6) - 3));
-  tempLoad.value = Math.min(90, Math.max(40, tempLoad.value + Math.floor(Math.random() * 4) - 2));
-};
-
-const addLog = () => {
-  const messages = [
-    'PACKET_RX: 0x4F2A', 'PING: 12ms', 'MEM_GC: COMPLETED', 'SYNC_CHECK: OK', 
-    'DATA_STREAM: ACTIVE', 'ENCRYPTION: AES-256', 'NODE_07: ONLINE', 'SCAN_COMPLETE'
-  ];
-  const msg = messages[Math.floor(Math.random() * messages.length)];
-  const now = new Date().toLocaleTimeString('en-US', { hour12: false });
-  
-  systemLogs.value.push({ time: now, msg });
-  if (systemLogs.value.length > 10) systemLogs.value.shift();
-  
-  nextTick(() => {
-    if (logContainer.value) {
-      logContainer.value.scrollTop = logContainer.value.scrollHeight;
-    }
-  });
-};
-
-const navigateTo = (path) => {
-  router.go(path);
-};
-
-const typeWriter = async (text) => {
-  for (let i = 0; i < text.length; i++) {
-    dialogueContent.value += text[i];
-    // Sound: Typewriter click
-    playTyping();
-    await new Promise(r => setTimeout(r, 100));
-  }
-};
-
-const runSequence = async () => {
-  try {
-    if (isLaunching.value) return;
-    
-    // Check if sequence was already run before
-    if (typeof window !== 'undefined') {
-      const alreadyRan = sessionStorage.getItem('vortex-sequence-ran');
-      if (alreadyRan) {
-        // Skip animation, go directly to scenario
-        sessionStorage.setItem('vortex-last-page', 'home');
-        router.go(withBase('/scenario/'));
-        return;
-      }
-    }
-    
-    isLaunching.value = true;
-    isShaking.value = true;
-    
-    // Phase 1: Overdrive (2.5s)
-    // Sound: Turbine spin up, alarm
-    console.log('Phase 1: Overdrive');
-    if (playSequenceStart) playSequenceStart(7.5); // Sequence start sound (sequence.wav) with 6.5s duration
-    
-    // 1.5초 딜레이 후 압력 사운드 재생 (제거됨)
-    /*
-    setTimeout(() => {
-      if (playPressureBuild) playPressureBuild();
-    }, 2000);
-    */
-    
-    await new Promise(r => setTimeout(r, 2500));
-    
-    // Phase 2: The Flash (1.5s)
-    // Sound: Explosion / Warp bang
-    console.log('Phase 2: Flash');
-    // if (playExplosion) playExplosion(); // 제거됨
-    showFlash.value = true;
-    
-    await new Promise(r => setTimeout(r, 1500));
-    
-    // Phase 3: The Voice (3.0s+)
-    // Sound: Silence, then typing sounds
-    console.log('Phase 3: Voice');
-    isShaking.value = false;
-    showFlash.value = false;
-    showBlackout.value = true;
-    
-    await new Promise(r => setTimeout(r, 1000)); // Brief pause in darkness
-    
-    await typeWriter("오래도 걸렸군요. 슬슬 녹이 스는 줄 알았습니다, 깡통 씨.");
-    
-    await new Promise(r => setTimeout(r, 2000)); // Read time
-    
-    // Phase 4: Deployment
-    // Sound: Digital disperse
-    console.log('Phase 4: Deploy');
-    dialogueFading.value = true;
-    
-    await new Promise(r => setTimeout(r, 1000));
-    
-    // Mark sequence as ran
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('vortex-sequence-ran', 'true');
-    }
-    
-    // Router Push
-    // Sound: CRT On / Grid expand
-    navigateTo(withBase('/scenario/'));
-  } catch (error) {
-    console.error("Sequence Error:", error);
-    // Fallback navigation
-    navigateTo(withBase('/scenario/'));
-  }
-};
-
 const tacticalTexts = ['SEC_04', 'LAT: 45.2', '[LOCKED]', 'SYS_RDY', 'NEXUS', 'A-77', 'ZOOM_x4', 'TRGT_ACQ', '0x4F', '///'];
+
 const getParticleStyle = () => {
   const left = Math.random() * 100;
   const delay = Math.random() * 20;
@@ -611,19 +450,174 @@ const floatingItems = ref(Array.from({ length: 25 }, (_, i) => ({
   style: getParticleStyle()
 })));
 
-// 첫 사용자 인터랙션 시 배경음 재생
+const modules = {
+  history: HistoryTacticalMap,
+  world: WorldTacticalMap,
+  characters: CharactersTacticalMap,
+  market: MarketTacticalMap,
+  system: SystemTacticalMap
+};
+
+// Intervals
+let timeInterval = null;
+let vitalInterval = null;
+let logInterval = null;
+
+const ambientVolume = computed({
+  get: () => getCategoryVolume('ambient'),
+  set: (val) => setCategoryVolume('ambient', parseFloat(val))
+});
+
+const updateVolume = (e) => {
+  setCategoryVolume('ambient', parseFloat(e.target.value));
+};
+
+const updateTime = () => {
+  const now = new Date();
+  currentTime.value = now.toLocaleTimeString('en-US', { hour12: false });
+};
+
+const updateVitals = () => {
+  cpuLoad.value = Math.min(99, Math.max(10, cpuLoad.value + Math.floor(Math.random() * 10) - 5));
+  memLoad.value = Math.min(99, Math.max(20, memLoad.value + Math.floor(Math.random() * 6) - 3));
+  tempLoad.value = Math.min(90, Math.max(40, tempLoad.value + Math.floor(Math.random() * 4) - 2));
+};
+
+const addLog = () => {
+  const messages = [
+    'PACKET_RX: 0x4F2A', 'PING: 12ms', 'MEM_GC: COMPLETED', 'SYNC_CHECK: OK', 
+    'DATA_STREAM: ACTIVE', 'ENCRYPTION: AES-256', 'NODE_07: ONLINE', 'SCAN_COMPLETE'
+  ];
+  const msg = messages[Math.floor(Math.random() * messages.length)];
+  const now = new Date().toLocaleTimeString('en-US', { hour12: false });
+  
+  systemLogs.value.push({ time: now, msg });
+  if (systemLogs.value.length > 10) systemLogs.value.shift();
+  
+  nextTick(() => {
+    if (logContainer.value) {
+      logContainer.value.scrollTop = logContainer.value.scrollHeight;
+    }
+  });
+};
+
+const typeWriter = async (text) => {
+  for (let i = 0; i < text.length; i++) {
+    dialogueContent.value += text[i];
+    playTyping();
+    await new Promise(r => setTimeout(r, 100));
+  }
+};
+
 const startAmbientOnInteraction = () => {
-  playAmbient();
-  document.removeEventListener('click', startAmbientOnInteraction);
-  document.removeEventListener('touchstart', startAmbientOnInteraction);
-  document.removeEventListener('keydown', startAmbientOnInteraction);
+   playAmbient();
+   document.removeEventListener('click', startAmbientOnInteraction);
+   document.removeEventListener('touchstart', startAmbientOnInteraction);
+   document.removeEventListener('keydown', startAmbientOnInteraction);
+};
+
+const runSequence = async () => {
+  try {
+    if (isLaunching.value) return;
+    
+    if (typeof window !== 'undefined') {
+      const alreadyRan = sessionStorage.getItem('vortex-sequence-ran');
+      if (alreadyRan) {
+        sessionStorage.setItem('vortex-last-page', 'home');
+        router.go(withBase('/scenario/'));
+        return;
+      }
+    }
+    
+    isLaunching.value = true;
+    isShaking.value = true;
+    
+    if (playSequenceStart) playSequenceStart(7.5);
+    
+    await new Promise(r => setTimeout(r, 2500));
+    
+    showFlash.value = true;
+    
+    await new Promise(r => setTimeout(r, 1500));
+    
+    isShaking.value = false;
+    showFlash.value = false;
+    showBlackout.value = true;
+    
+    await new Promise(r => setTimeout(r, 1000));
+    
+    await typeWriter("오래도 걸렸군요. 슬슬 녹이 스는 줄 알았습니다, 깡통 씨.");
+    
+    await new Promise(r => setTimeout(r, 2000));
+    
+    dialogueFading.value = true;
+    
+    await new Promise(r => setTimeout(r, 1000));
+    
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('vortex-sequence-ran', 'true');
+    }
+    
+    navigateTo(withBase('/scenario/'));
+  } catch (error) {
+    console.error("Sequence Error:", error);
+    navigateTo(withBase('/scenario/'));
+  }
+};
+
+const navigateTo = (path) => {
+  router.go(path);
+};
+
+const openModule = (moduleName) => {
+  const routes = {
+    history: withBase('/guide/history.html'),
+    world: withBase('/world/map.html'),
+    characters: withBase('/characters/index.html'),
+    market: withBase('/assets/list.html'),
+    system: withBase('/threats/database.html')
+  };
+
+  const targetUrl = routes[moduleName];
+  if (targetUrl) {
+    playGearEngage();
+    playTransition();
+    
+    sessionStorage.setItem('vortex-last-page', 'home');
+    
+    isExiting.value = true;
+    
+    setTimeout(() => {
+      router.go(targetUrl);
+    }, 1200);
+  } else {
+    activeModule.value = moduleName;
+  }
+};
+
+const closeModule = () => {
+  activeModule.value = null;
+  playClick();
+};
+
+// Mobile Detection
+const isMobile = ref(false);
+const checkMobile = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 768;
+  }
 };
 
 onMounted(() => {
-  // 즉시 재생 시도 (이전 페이지에서 인터랙션이 있었다면 작동)
-  playAmbient();
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  
+  // Ensure system becomes ready
+  setTimeout(() => {
+    isSystemReady.value = true;
+  }, 100);
 
-  // 배경음은 사용자 인터랙션 후에만 재생
+  playAmbient();
   document.addEventListener('click', startAmbientOnInteraction);
   document.addEventListener('touchstart', startAmbientOnInteraction);
   document.addEventListener('keydown', startAmbientOnInteraction);
@@ -632,13 +626,7 @@ onMounted(() => {
   timeInterval = setInterval(updateTime, 1000);
   vitalInterval = setInterval(updateVitals, 1500);
   logInterval = setInterval(addLog, 2500);
-
-  // Cinematic Boot Trigger
-  setTimeout(() => {
-    isSystemReady.value = true;
-  }, 100);
   
-  // Preload sequence sound for instant playback
   preloadSound('sequence-start');
 });
 

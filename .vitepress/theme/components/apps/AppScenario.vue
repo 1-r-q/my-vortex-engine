@@ -1,5 +1,49 @@
 <template>
   <div class="mission-terminal" :class="{ 'closing': isClosing, 'system-active': isLoaded, 'content-active': isContentLoaded }">
+    <!-- Mobile View -->
+    <div v-if="isMobile" class="mobile-scenario-view">
+      <div class="mobile-header">
+        <h2>MISSION LOG</h2>
+        <button class="mobile-close-btn" @click="handleClose">EXIT</button>
+      </div>
+      
+      <div class="mobile-chapter-list">
+        <div 
+          v-for="(chapter, index) in chapters" 
+          :key="index" 
+          class="mobile-chapter-card"
+          :class="{ 'active': selectedIndex === index, 'locked': !unlockedIndices.includes(index) }"
+        >
+          <div class="m-chapter-header" @click="selectedIndex = index; playClick()">
+            <span class="m-status-icon">{{ unlockedIndices.includes(index) ? '🟢' : '🔒' }}</span>
+            <span class="m-title">{{ chapter.title }}</span>
+            <span class="m-arrow">{{ selectedIndex === index ? '▼' : '▶' }}</span>
+          </div>
+          
+          <div class="m-chapter-body" v-if="selectedIndex === index">
+            <div v-if="!unlockedIndices.includes(index)" class="m-locked-content" @click="handleLockInteraction">
+               <div class="m-access-denied">ACCESS DENIED</div>
+               <div class="m-hint" v-if="chapter.relatedChar">SIGNAL: {{ chapter.relatedChar }}</div>
+            </div>
+            <div v-else class="m-content">
+               <div class="m-meta-row">
+                 <span>TIME: {{ chapter.time }}</span>
+                 <span>LOC: {{ chapter.loc }}</span>
+               </div>
+               <div class="m-desc">{{ chapter.bg }}</div>
+               <div class="m-alert" v-if="chapter.crisis">
+                 <strong>⚠️ THREAT:</strong> {{ chapter.crisis }}
+               </div>
+               <div class="m-obj" v-if="chapter.objective">
+                 <strong>🎯 OBJECTIVE:</strong> {{ chapter.objective }}
+               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <template v-else>
     <!-- Left Panel: Data Cartridge Bay -->
     <aside class="cartridge-bay">
       <div class="bay-header">
@@ -163,6 +207,7 @@
         </div>
       </div>
     </main>
+    </template>
     <!-- Hidden Dialog Overlay -->
     <div class="hidden-dialog" v-if="showHiddenDialog">
       <div class="dialog-box">
@@ -203,9 +248,18 @@ import { usePageTransition } from '../../transitionState';
 import { useSteamSound } from '../../composables/useSteamSound';
 import { withBase } from 'vitepress';
 
+// Mobile Detection
+const isMobile = ref(false);
+const checkMobile = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 768;
+  }
+};
+
 const emit = defineEmits(['close']);
 const { startTransition } = usePageTransition();
 const { playClick, playUnlock, playHover, playFail, playTyping, playCancel } = useSteamSound();
+
 const isClosing = ref(false);
 const isLoaded = ref(false);
 const isContentLoaded = ref(false);
@@ -429,6 +483,9 @@ watch(unlockedIndices, (newVal) => {
 }, { deep: true });
 
 onMounted(() => {
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+
   // Load unlocked chapters
   if (typeof window !== 'undefined') {
     const stored = sessionStorage.getItem('vortex-unlocked-chapters');
@@ -453,6 +510,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
   if (hexInterval) clearInterval(hexInterval);
 });
 </script>
@@ -1391,3 +1449,16 @@ onUnmounted(() => {
   }
 }
 </style>
+/* Added Mobile View Styles */
+.mobile-scenario-view { padding: 80px 20px 20px; color: #ffb000; height: 100vh; overflow-y: auto; background: #000; }
+.mobile-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ffb000; padding-bottom: 10px; }
+.mobile-close-btn { background: #333; color: white; border: 1px solid #ffb000; padding: 5px 15px; }
+.mobile-chapter-card { border: 1px solid #444; margin-bottom: 10px; background: #111; }
+.m-chapter-header { padding: 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.m-title { flex: 1; font-weight: bold; }
+.m-chapter-body { padding: 15px; border-top: 1px dashed #444; background: #0a0a0a; }
+.m-meta-row { display: flex; gap: 15px; font-size: 0.8em; color: #888; margin-bottom: 10px; }
+.m-desc { margin-bottom: 10px; line-height: 1.4; }
+.m-alert, .m-obj { padding: 8px; background: #220; border-left: 3px solid #ffb000; margin-top: 5px; font-size: 0.9em; }
+.m-access-denied { color: red; font-weight: bold; text-align: center; }
+.m-hint { text-align: center; font-size: 0.8em; color: #666; margin-top: 5px; }

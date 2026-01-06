@@ -8,7 +8,7 @@
   <BootScreen v-else-if="!isBooted" @close-boot="onBootComplete" />
   
   <!-- 메인 콘텐츠 -->
-  <div v-else class="main-content-wrapper">
+  <div v-else class="main-content-wrapper notranslate" translate="no">
     <canvas id="layout-matrix-canvas"></canvas>
     
     <!-- Global Page Transition Overlay (Disabled) -->

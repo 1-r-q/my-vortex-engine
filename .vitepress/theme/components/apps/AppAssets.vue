@@ -108,3 +108,8 @@ h3 {
   }
 }
 </style>
+
+@media (max-width: 768px) {
+  .market-grid { grid-template-columns: 1fr; }
+  .market-section { margin-bottom: 20px; }
+}

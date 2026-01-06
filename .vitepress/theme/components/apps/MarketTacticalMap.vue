@@ -1,9 +1,31 @@
 <template>
+  <div class="mobile-market-view" v-if="isMobile">
+    <div class="mobile-header">
+      <button @click="goHome" class="back-btn">← MENU</button>
+      <h2>ASSETS MARKET</h2>
+    </div>
+    
+    <div class="mobile-tabs">
+      <button class="mobile-tab-btn" :class="{ active: activeTab === 'workshop' }" @click="switchTab('workshop')">WORKSHOP</button>
+      <button class="mobile-tab-btn" :class="{ active: activeTab === 'market' }" @click="switchTab('market')">MARKET</button>
+    </div>
+
+    <div class="market-list-mobile">
+      <div v-for="item in currentArsenal" :key="item.id" class="market-item-mobile">
+        <div class="item-name-mobile">{{ item.name }}</div>
+        <div class="item-price-mobile">{{ item.price }}</div>
+        <div class="item-desc-mobile">{{ item.desc }}</div>
+      </div>
+    </div>
+  </div>
+
   <div 
+    v-else
     class="market-tactical-map" 
     :class="[activeTab, { 'is-exiting': isExiting, 'is-switching': isSwitching, 'from-home': fromHome }]" 
     ref="mapContainer"
   >
+
     <!-- 3D Perspective Grid Floor -->
     <div class="grid-floor">
       <div class="grid-lines"></div>
@@ -353,6 +375,19 @@ const router = useRouter();
 const { startTransition } = usePageTransition();
 const { playHover, playClick, playCardSelect, playBuy, playToggleOn, playToggleOff, playBack, playTransition, playBeepConfirm, playDataTransmit, playScan, categoryVolumes, setCategoryVolume } = useSteamSound();
 
+// Mobile Detection
+const isMobile = ref(false);
+const checkMobile = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 768;
+  }
+};
+
+const goHome = () => {
+  playBack();
+  router.go(withBase('/'));
+};
+
 const ambientVolume = computed({
   get: () => categoryVolumes.ambient,
   set: (val) => setCategoryVolume('ambient', val)
@@ -544,6 +579,9 @@ const handleClose = () => {
 
 // Lifecycle
 onMounted(() => {
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  playTransition();
   checkNavigationSource();
   
   initItemStates();
@@ -557,6 +595,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
   if (timeInterval) clearInterval(timeInterval);
   if (percentInterval) clearInterval(percentInterval);
   if (toastTimer) clearTimeout(toastTimer);
@@ -2050,5 +2089,94 @@ watch(activeTab, () => {
     width: 90%;
     height: 40px;
   }
+}
+
+/* Mobile View Specific Styles */
+.mobile-market-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #050505;
+  color: #ffb000;
+  overflow-y: auto;
+  padding: 20px;
+  z-index: 2000;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.mobile-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 176, 0, 0.3);
+  padding-bottom: 10px;
+}
+
+.back-btn {
+  background: transparent;
+  border: 1px solid #ffb000;
+  color: #ffb000;
+  padding: 5px 10px;
+  margin-right: 15px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.mobile-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 176, 0, 0.3);
+  border-radius: 4px;
+}
+
+.mobile-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 10px;
+  font-family: inherit;
+  font-weight: bold;
+}
+
+.mobile-tab-btn.active {
+  background: rgba(255, 176, 0, 0.2);
+  color: #ffb000;
+}
+
+.market-list-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.market-item-mobile {
+  border: 1px solid rgba(255, 176, 0, 0.2);
+  background: rgba(255, 176, 0, 0.05);
+  padding: 15px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.item-name-mobile {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #ffcc00;
+  margin-bottom: 5px;
+}
+
+.item-price-mobile {
+  font-size: 0.9rem;
+  color: #4caf50;
+  margin-bottom: 10px;
+}
+
+.item-desc-mobile {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.8);
 }
 </style>
