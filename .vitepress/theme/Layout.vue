@@ -80,7 +80,7 @@
 
     </div> -->
 
-    <CustomHome v-if="frontmatter.layout === 'home'" />
+    <CustomHome v-if="frontmatter.layout === 'custom-home' || frontmatter.layout === 'home'" />
     
     <Layout v-else>
       <template #sidebar-nav-after>
