@@ -169,7 +169,7 @@ const savePersistence = () => {
     localStorage.setItem(key, clickCount.value.toString());
 };
 
-const imageGlobs = import.meta.glob('../../../../public/images/**/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
+const imageGlobs = import.meta.glob('../../../../public/images/**/*.{png,jpg,jpeg,webp}', { eager: true, query: '?url', import: 'default' });
 
 const loadImages = () => {
   // We need to determine the folder name.

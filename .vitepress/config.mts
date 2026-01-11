@@ -10,7 +10,7 @@ export default defineConfig({
   ],
   // ▼ [중요] 도메인 연결 시에는 무조건 '/' 로 변경해야 합니다.
   // 기존: base: '/my-vortex-engine/',
-  base: '/',
+  base: '/my-vortex-engine/',
 
   // (기존 설정 유지)
   vite: {
